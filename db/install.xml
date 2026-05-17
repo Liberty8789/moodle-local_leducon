@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/leducon/db" VERSION="20260512" COMMENT="XMLDB file for local_leducon"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+  <TABLES>
+
+    <!-- ============================================================ -->
+    <!-- ANALYTICS TABLES                                              -->
+    <!-- ============================================================ -->
+
+    <TABLE NAME="local_leducon_alertrules" COMMENT="Alert rule definitions">
+      <FIELDS>
+        <FIELD NAME="id"              TYPE="int"    LENGTH="10"  NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name"            TYPE="char"   LENGTH="255" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="condition_type"  TYPE="char"   LENGTH="50"  NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="threshold"       TYPE="number" LENGTH="10"  DECIMALS="2" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="courseid"        TYPE="int"    LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="cohortid"        TYPE="int"    LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="notify_emails"   TYPE="text"   NOTNULL="false"/>
+        <FIELD NAME="notify_teachers" TYPE="int"    LENGTH="2"   NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="active"          TYPE="int"    LENGTH="2"   NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="timecreated"     TYPE="int"    LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified"    TYPE="int"    LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="active"   UNIQUE="false" FIELDS="active"/>
+        <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_skills" COMMENT="Skill definitions">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"  LENGTH="10"  NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name"         TYPE="char" LENGTH="255" NOTNULL="true"/>
+        <FIELD NAME="description"  TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_course_skills" COMMENT="Course to skill mapping">
+      <FIELDS>
+        <FIELD NAME="id"       TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="skillid"  TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid_skillid" UNIQUE="true" FIELDS="courseid, skillid"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_course_costs" COMMENT="ROI cost data per course">
+      <FIELDS>
+        <FIELD NAME="id"                 TYPE="int"    LENGTH="10"  NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid"           TYPE="int"    LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="costperlearner"     TYPE="number" LENGTH="10"  DECIMALS="2" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="valuepercompletion" TYPE="number" LENGTH="10"  DECIMALS="2" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="currency"           TYPE="char"   LENGTH="3"   NOTNULL="true" DEFAULT="USD"/>
+        <FIELD NAME="notes"              TYPE="text"   NOTNULL="false"/>
+        <FIELD NAME="timemodified"       TYPE="int"    LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid" UNIQUE="true" FIELDS="courseid"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- ============================================================ -->
+    <!-- SHARED TABLE                                                  -->
+    <!-- ============================================================ -->
+
+    <TABLE NAME="local_leducon_team_managers" COMMENT="Manager to cohort assignments">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid"       TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="cohortid"     TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timeassigned" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid_cohortid" UNIQUE="true" FIELDS="userid, cohortid"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- ============================================================ -->
+    <!-- GAMIFICATION TABLES                                           -->
+    <!-- ============================================================ -->
+
+    <TABLE NAME="local_leducon_xp_users" COMMENT="Per-user XP totals, level, streak">
+      <FIELDS>
+        <FIELD NAME="id"            TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid"        TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="total_xp"      TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="levelid"       TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="streak_days"   TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="last_activity" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="timecreated"   TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified"  TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid"   UNIQUE="true"  FIELDS="userid"/>
+        <INDEX NAME="total_xp" UNIQUE="false" FIELDS="total_xp"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_xp_log" COMMENT="XP award log">
+      <FIELDS>
+        <FIELD NAME="id"          TYPE="int"  LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid"      TYPE="int"  LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="points"      TYPE="int"  LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="eventtype"   TYPE="char" LENGTH="64" NOTNULL="true"/>
+        <FIELD NAME="contextid"   TYPE="int"  LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="campaignid"  TYPE="int"  LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="note"        TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="timecreated" TYPE="int"  LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid_event" UNIQUE="false" FIELDS="userid, eventtype"/>
+        <INDEX NAME="userid_time"  UNIQUE="false" FIELDS="userid, timecreated"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_levels" COMMENT="XP level thresholds and names">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"  LENGTH="10"  NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="levelnum"     TYPE="int"  LENGTH="10"  NOTNULL="true"/>
+        <FIELD NAME="name"         TYPE="char" LENGTH="100" NOTNULL="true"/>
+        <FIELD NAME="min_xp"       TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="levelnum" UNIQUE="true" FIELDS="levelnum"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_achievements" COMMENT="Achievement definitions">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"  LENGTH="10"  NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name"         TYPE="char" LENGTH="100" NOTNULL="true"/>
+        <FIELD NAME="description"  TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="icon"         TYPE="char" LENGTH="10"  NOTNULL="true" DEFAULT="&#127942;"/>
+        <FIELD NAME="xp_bonus"     TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="rule_type"    TYPE="char" LENGTH="64"  NOTNULL="true"/>
+        <FIELD NAME="rule_value"   TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="enabled"      TYPE="int"  LENGTH="1"   NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="sortorder"    TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="rule_type" UNIQUE="false" FIELDS="rule_type"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_user_achiev" COMMENT="Achievements earned by users">
+      <FIELDS>
+        <FIELD NAME="id"            TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid"        TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="achievementid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="timecreated"   TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid_achiev" UNIQUE="true" FIELDS="userid, achievementid"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_rewards" COMMENT="Reward catalog items">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"  LENGTH="10"  NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name"         TYPE="char" LENGTH="200" NOTNULL="true"/>
+        <FIELD NAME="description"  TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="cost_xp"      TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="quantity"     TYPE="int"  LENGTH="10"  NOTNULL="false"/>
+        <FIELD NAME="enabled"      TYPE="int"  LENGTH="1"   NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="sortorder"    TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_redemptions" COMMENT="Reward redemption requests">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"  LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid"       TYPE="int"  LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="rewardid"     TYPE="int"  LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="cost_xp"      TYPE="int"  LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="status"       TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="pending"/>
+        <FIELD NAME="approvedby"   TYPE="int"  LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="manager_note" TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int"  LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid_status" UNIQUE="false" FIELDS="userid, status"/>
+        <INDEX NAME="status"        UNIQUE="false" FIELDS="status"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_campaigns" COMMENT="XP multiplier campaigns">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"    LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name"         TYPE="char"   LENGTH="200" NOTNULL="true"/>
+        <FIELD NAME="description"  TYPE="text"   NOTNULL="false"/>
+        <FIELD NAME="multiplier"   TYPE="number" LENGTH="4"  DECIMALS="2" NOTNULL="true" DEFAULT="2.00"/>
+        <FIELD NAME="startdate"    TYPE="int"    LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="enddate"      TYPE="int"    LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="cohortid"     TYPE="int"    LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="enabled"      TYPE="int"    LENGTH="1"  NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="timecreated"  TYPE="int"    LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int"    LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="dates" UNIQUE="false" FIELDS="startdate, enddate"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_camp_courses" COMMENT="Courses linked to a campaign">
+      <FIELDS>
+        <FIELD NAME="id"         TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="campaignid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="courseid"   TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="campaignid_courseid" UNIQUE="true" FIELDS="campaignid, courseid"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_paths" COMMENT="Learning path definitions">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"  LENGTH="10"  NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name"         TYPE="char" LENGTH="200" NOTNULL="true"/>
+        <FIELD NAME="description"  TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="xp_bonus"     TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="cohortid"     TYPE="int"  LENGTH="10"  NOTNULL="false"/>
+        <FIELD NAME="enabled"      TYPE="int"  LENGTH="1"   NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_path_courses" COMMENT="Ordered courses within a learning path">
+      <FIELDS>
+        <FIELD NAME="id"        TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="pathid"    TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="courseid"  TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="pathid_courseid" UNIQUE="true" FIELDS="pathid, courseid"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_recognition" COMMENT="Peer recognition and spotlight posts">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"  LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="senderid"     TYPE="int"  LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="recipientid"  TYPE="int"  LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="message"      TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="is_spotlight" TYPE="int"  LENGTH="1"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="xp_awarded"   TYPE="int"  LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="visible"      TYPE="int"  LENGTH="1"  NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="recipientid" UNIQUE="false" FIELDS="recipientid"/>
+        <INDEX NAME="senderid"    UNIQUE="false" FIELDS="senderid"/>
+        <INDEX NAME="timecreated" UNIQUE="false" FIELDS="timecreated"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- ============================================================ -->
+    <!-- ORGANISATION STRUCTURE TABLES                                 -->
+    <!-- ============================================================ -->
+
+    <TABLE NAME="local_leducon_org_units" COMMENT="Organisation structure tree nodes">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"  LENGTH="10"   NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name"         TYPE="char" LENGTH="255"  NOTNULL="true"/>
+        <FIELD NAME="shortname"    TYPE="char" LENGTH="100"  NOTNULL="false"/>
+        <FIELD NAME="parentid"     TYPE="int"  LENGTH="10"   NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="depth"        TYPE="int"  LENGTH="4"    NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="path"         TYPE="char" LENGTH="1000" NOTNULL="true" DEFAULT="/"/>
+        <FIELD NAME="description"  TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="cohortid"     TYPE="int"  LENGTH="10"   NOTNULL="false"/>
+        <FIELD NAME="enabled"      TYPE="int"  LENGTH="1"    NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="sortorder"    TYPE="int"  LENGTH="6"    NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10"   NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int"  LENGTH="10"   NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="parentid"  UNIQUE="false" FIELDS="parentid"/>
+        <INDEX NAME="cohortid"  UNIQUE="false" FIELDS="cohortid"/>
+        <INDEX NAME="enabled"   UNIQUE="false" FIELDS="enabled"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_org_members" COMMENT="User membership in org units">
+      <FIELDS>
+        <FIELD NAME="id"          TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="orgunitid"   TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="userid"      TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="orgunitid_userid" UNIQUE="true"  FIELDS="orgunitid, userid"/>
+        <INDEX NAME="userid"           UNIQUE="false" FIELDS="userid"/>
+      </INDEXES>
+    </TABLE>
+
+    <!-- ============================================================ -->
+    <!-- CUSTOM REPORTS & AUTOMATION TABLES                            -->
+    <!-- ============================================================ -->
+
+    <TABLE NAME="local_leducon_custom_rpts" COMMENT="Saved custom report definitions">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"  LENGTH="10"   NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name"         TYPE="char" LENGTH="255"  NOTNULL="true"/>
+        <FIELD NAME="description"  TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="datasource"   TYPE="char" LENGTH="50"   NOTNULL="true" DEFAULT="completions"/>
+        <FIELD NAME="config"       TYPE="text" NOTNULL="true" COMMENT="JSON: columns, conditions, orderby"/>
+        <FIELD NAME="shared"       TYPE="int"  LENGTH="1"    NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="createdby"    TYPE="int"  LENGTH="10"   NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10"   NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int"  LENGTH="10"   NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="createdby" UNIQUE="false" FIELDS="createdby"/>
+        <INDEX NAME="shared"    UNIQUE="false" FIELDS="shared"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_leducon_rpt_schedule" COMMENT="Scheduled email delivery for reports">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"  LENGTH="10"  NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="reportid"     TYPE="int"  LENGTH="10"  NOTNULL="false" COMMENT="FK custom_rpts or null for built-in"/>
+        <FIELD NAME="reporttype"   TYPE="char" LENGTH="50"  NOTNULL="false" COMMENT="Built-in report key or null"/>
+        <FIELD NAME="userid"       TYPE="int"  LENGTH="10"  NOTNULL="true"/>
+        <FIELD NAME="recipients"   TYPE="text" NOTNULL="true" COMMENT="Comma-separated emails"/>
+        <FIELD NAME="frequency"    TYPE="char" LENGTH="20"  NOTNULL="true" DEFAULT="weekly" COMMENT="daily,weekly,monthly"/>
+        <FIELD NAME="day_of_week"  TYPE="int"  LENGTH="1"   NOTNULL="true" DEFAULT="1" COMMENT="1=Mon...7=Sun"/>
+        <FIELD NAME="day_of_month" TYPE="int"  LENGTH="2"   NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="hour"         TYPE="int"  LENGTH="2"   NOTNULL="true" DEFAULT="7"/>
+        <FIELD NAME="format"       TYPE="char" LENGTH="10"  NOTNULL="true" DEFAULT="csv"/>
+        <FIELD NAME="enabled"      TYPE="int"  LENGTH="1"   NOTNULL="true" DEFAULT="1"/>
+        <FIELD NAME="last_sent"    TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid"    UNIQUE="false" FIELDS="userid"/>
+        <INDEX NAME="enabled"   UNIQUE="false" FIELDS="enabled"/>
+        <INDEX NAME="reportid"  UNIQUE="false" FIELDS="reportid"/>
+      </INDEXES>
+    </TABLE>
+
+  </TABLES>
+</XMLDB>

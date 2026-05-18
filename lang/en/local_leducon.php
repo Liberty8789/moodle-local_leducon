@@ -1752,6 +1752,110 @@ $string['settings_retention_months']        = 'Retention Period';
 $string['settings_retention_months_desc']   = 'Keep detailed XP log entries for this many months.';
 
 // =================================================================
+// DASHBOARD CHARTS
+// =================================================================
+$string['settings_dashboard_heading']           = 'Dashboard Charts';
+$string['settings_dashboard_trend_weeks']       = 'Activity trend weeks';
+$string['settings_dashboard_trend_weeks_desc']  = 'Number of weeks to show in the dashboard activity trend chart.';
+$string['settings_dashboard_enrol_months']      = 'Enrolment trend months';
+$string['settings_dashboard_enrol_months_desc'] = 'Number of months to show in the dashboard enrolment trend chart.';
+$string['settings_grade_bracket_1']             = 'Grade distribution brackets';
+$string['settings_grade_bracket_desc']          = 'Comma-separated boundaries for grade distribution chart (e.g. 0,40,50,70,90,100).';
+
+// =================================================================
+// MODULE FEATURE TOGGLES
+// =================================================================
+$string['settings_modules_heading']          = 'Module Reports';
+$string['settings_modules_heading_desc']     = 'Enable or disable reports for specific Moodle activity modules. Disabled reports will be hidden from the sidebar.';
+$string['settings_enable_quiz_reports']      = 'Enable quiz reports';
+$string['settings_enable_assignment_reports'] = 'Enable assignment reports';
+$string['settings_enable_forum_reports']     = 'Enable forum reports';
+$string['settings_enable_scorm_reports']     = 'Enable SCORM reports';
+$string['settings_enable_ilt_reports']       = 'Enable ILT/VILT reports';
+
+// =================================================================
+// INSIGHT THRESHOLDS
+// =================================================================
+$string['settings_insight_heading']               = 'Insight Thresholds';
+$string['settings_insight_heading_desc']          = 'Configure the thresholds that trigger insight alerts on report pages. Values are percentages unless otherwise noted.';
+$string['settings_insight_completion_high']        = 'Completion rate: high (%)';
+$string['settings_insight_completion_low']         = 'Completion rate: low (%)';
+$string['settings_insight_completion_notstarted']  = 'Not-started learners: warning (%)';
+$string['settings_insight_completion_best']        = 'Top course: minimum rate (%)';
+$string['settings_insight_compliance_high']        = 'Compliance rate: good (%)';
+$string['settings_insight_compliance_low']         = 'Compliance rate: danger (%)';
+$string['settings_insight_grade_high']             = 'Grade average: high (%)';
+$string['settings_insight_grade_low']              = 'Grade average: low (%)';
+$string['settings_insight_quiz_highpass']          = 'Quiz pass rate: excellent (%)';
+$string['settings_insight_quiz_lowpass']           = 'Quiz pass rate: concern (%)';
+$string['settings_insight_quiz_longtime']          = 'Quiz long time: threshold (mins)';
+$string['settings_insight_forum_active']           = 'Forum active: min posts';
+$string['settings_insight_assign_ungraded']        = 'Assignment ungraded: warning count';
+$string['settings_insight_assign_ontime']          = 'Assignment on-time: excellence (%)';
+$string['settings_insight_assign_late_pct']        = 'Assignment late: warning (%)';
+$string['settings_insight_login_inactive_days']    = 'Login inactive: days threshold';
+$string['settings_insight_login_poweruser']        = 'Login power user: min logins';
+$string['settings_insight_login_lowfreq']          = 'Login low frequency: avg threshold';
+$string['settings_insight_login_multicourse']      = 'Multi-course learner: min courses';
+$string['settings_insight_login_noact_pct']        = 'No activities: warning (%)';
+$string['settings_insight_ts_highavg']             = 'Time spent: high avg (mins)';
+$string['settings_insight_ts_lowavg']              = 'Time spent: low avg (mins)';
+$string['settings_insight_ts_heavy']               = 'Time spent: heavy user (mins)';
+$string['settings_insight_ts_light_pct']           = 'Time spent: light users warning (%)';
+$string['settings_insight_badge_multi']            = 'Badge multi-earner: avg threshold';
+$string['settings_insight_badge_volume']           = 'Badge volume: high count';
+$string['settings_insight_cert_volume']            = 'Certificate volume: high count';
+$string['settings_insight_cert_achievers']         = 'Certificate achievers: ratio threshold';
+$string['settings_insight_cat_spread']             = 'Category spread: warning (% points)';
+$string['settings_insight_cat_best']               = 'Category best: min rate (%)';
+$string['settings_insight_cat_worst']              = 'Category worst: max rate (%)';
+$string['settings_insight_inst_highrate']          = 'Instructor completion: high (%)';
+$string['settings_insight_inst_lowrate']           = 'Instructor completion: low (%)';
+$string['settings_insight_inst_highload']          = 'Instructor high load: student count';
+$string['settings_insight_mv_highrisk']            = 'Manager view: high risk (%)';
+$string['settings_insight_mv_topperformers']       = 'Manager view: top performers count';
+$string['settings_insight_atrisk_inactive_days']   = 'At-risk inactive: days threshold';
+$string['settings_insight_atrisk_min_count']       = 'At-risk insights: minimum count';
+$string['settings_insight_ilt_highattend']         = 'ILT high attendance (%)';
+$string['settings_insight_ilt_lowattend']          = 'ILT low attendance (%)';
+$string['settings_insight_ilt_noshow_min']         = 'ILT no-show: minimum count';
+$string['settings_insight_ilt_highrating']         = 'ILT high rating (out of 5)';
+$string['settings_insight_ilt_lowrating']          = 'ILT low rating (out of 5)';
+$string['settings_insight_ilt_facilitator_count']  = 'ILT top facilitator: minimum session count';
+$string['settings_insight_ilt_dept_count']         = 'ILT department engagement: minimum departments';
+
+// =================================================================
+// MISCELLANEOUS SETTINGS
+// =================================================================
+$string['settings_misc_heading']                     = 'Miscellaneous';
+$string['settings_mins_per_log_event']               = 'Minutes per log event';
+$string['settings_mins_per_log_event_desc']          = 'Estimated minutes of learning time per log event for time-spent calculations.';
+$string['settings_quiz_firstpass_threshold']         = 'Quiz first-pass bonus threshold (%)';
+$string['settings_quiz_firstpass_threshold_desc']    = 'Minimum grade percentage on first quiz attempt to earn the first-pass XP bonus.';
+$string['settings_streak_milestones']                = 'Streak milestone days';
+$string['settings_streak_milestones_desc']           = 'Comma-separated day counts for streak milestones (e.g. 7,30,90,365).';
+$string['settings_scheduler_daily_buffer']           = 'Scheduler daily buffer (hours)';
+$string['settings_scheduler_daily_buffer_desc']      = 'Minimum hours between daily scheduled report emails.';
+$string['settings_scheduler_weekly_buffer']          = 'Scheduler weekly buffer (days)';
+$string['settings_scheduler_weekly_buffer_desc']     = 'Minimum days between weekly scheduled report emails.';
+$string['settings_scheduler_monthly_buffer']         = 'Scheduler monthly buffer (days)';
+$string['settings_scheduler_monthly_buffer_desc']    = 'Minimum days between monthly scheduled report emails.';
+$string['settings_precompute_period_days']           = 'Precompute period (days)';
+$string['settings_precompute_period_days_desc']      = 'Default date range in days for precomputed report aggregates.';
+
+// =================================================================
+// THEME / COLORS
+// =================================================================
+$string['settings_theme_heading']      = 'Theme Colors';
+$string['settings_theme_heading_desc'] = 'Customise the accent colors used across the dashboard, KPI cards, charts, and report tiles.';
+$string['settings_color_primary']      = 'Primary color';
+$string['settings_color_success']      = 'Success color';
+$string['settings_color_warning']      = 'Warning color';
+$string['settings_color_danger']       = 'Danger color';
+$string['settings_color_info']         = 'Info color';
+$string['settings_color_purple']       = 'Accent color';
+
+// =================================================================
 // CONSOLIDATED REPORT CLASSES
 // =================================================================
 $string['report_teacherview']       = 'Teacher View';

@@ -85,6 +85,11 @@ abstract class base_report {
         return userdate((int) $ts, get_string('strftimedatetimeshort', 'langconfig'));
     }
 
+    protected function threshold(string $key, $default = 0) {
+        $val = get_config('local_leducon', $key);
+        return $val !== false && $val !== '' ? (float) $val : (float) $default;
+    }
+
     public function get_summary(): array {
         return [];
     }

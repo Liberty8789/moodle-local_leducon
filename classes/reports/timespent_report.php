@@ -17,7 +17,9 @@ namespace local_leducon\reports;
  */
 class timespent_report extends base_report {
 
-    const MINS_PER_EVENT = 3;
+    public static function get_mins_per_event(): int {
+        return (int)(get_config('local_leducon', 'mins_per_log_event') ?: 3);
+    }
 
     public function get_name(): string {
         return get_string('report_timespent', 'local_leducon');
@@ -96,7 +98,7 @@ class timespent_report extends base_report {
                 'fullname'    => fullname($r),
                 'coursename'  => format_string($r->coursename),
                 'events'      => $events,
-                'est_minutes' => $events * self::MINS_PER_EVENT,
+                'est_minutes' => $events * self::get_mins_per_event(),
                 'sessions'    => (int) $r->sessions,
                 'lastactive'  => $this->fmt_date($r->lastactive),
             ];
@@ -118,22 +120,22 @@ class timespent_report extends base_report {
         $heavy = 0;
         $light = 0;
         foreach ($data as $row) {
-            if ((int)$row['est_minutes'] >= 300) {
+            if ((int)$row['est_minutes'] >= $this->threshold('insight_ts_heavy', 300)) {
                 $heavy++;
             }
-            if ((int)$row['est_minutes'] < 30) {
+            if ((int)$row['est_minutes'] < $this->threshold('insight_ts_lowavg', 30)) {
                 $light++;
             }
         }
 
-        if ($avgmins >= 120) {
+        if ($avgmins >= $this->threshold('insight_ts_highavg', 120)) {
             $insights[] = [
                 'icon'   => "\xF0\x9F\x8F\x86",
                 'type'   => 'success',
                 'title'  => get_string('insight_ts_highavg', 'local_leducon', $avgmins),
                 'detail' => get_string('insight_ts_highavg_detail', 'local_leducon'),
             ];
-        } elseif ($avgmins < 30) {
+        } elseif ($avgmins < $this->threshold('insight_ts_lowavg', 30)) {
             $insights[] = [
                 'icon'   => "\xE2\x9A\xA0\xEF\xB8\x8F",
                 'type'   => 'warning',
@@ -153,7 +155,7 @@ class timespent_report extends base_report {
 
         if ($light > 0 && $totalusers > 5) {
             $lightpct = round($light / $totalusers * 100);
-            if ($lightpct >= 30) {
+            if ($lightpct >= $this->threshold('insight_ts_light_pct', 30)) {
                 $insights[] = [
                     'icon'   => "\xF0\x9F\x93\x89",
                     'type'   => 'danger',
@@ -169,7 +171,7 @@ class timespent_report extends base_report {
     public function get_summary(): array {
         $data        = $this->get_data();
         $totalevents = array_sum(array_column($data, 'events'));
-        $totalmins   = $totalevents * self::MINS_PER_EVENT;
+        $totalmins   = $totalevents * self::get_mins_per_event();
         return [
             ['label' => get_string('ts_events',      'local_leducon'), 'value' => $totalevents],
             ['label' => get_string('ts_est_minutes', 'local_leducon'), 'value' => $totalmins],

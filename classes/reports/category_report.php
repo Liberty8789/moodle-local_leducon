@@ -151,7 +151,7 @@ class category_report extends base_report {
             $avgrate = round(array_sum($rates) / count($rates), 1);
             $spread  = $bestrate - $worstrate;
 
-            if ($spread >= 40 && count($rates) >= 3) {
+            if ($spread >= $this->threshold('insight_cat_spread', 40) && count($rates) >= 3) {
                 $insights[] = [
                     'icon'   => "\xF0\x9F\x93\x8A",
                     'type'   => 'warning',
@@ -160,7 +160,7 @@ class category_report extends base_report {
                 ];
             }
 
-            if ($bestcat && $bestrate >= 70) {
+            if ($bestcat && $bestrate >= $this->threshold('insight_cat_best', 70)) {
                 $a = new \stdClass();
                 $a->name = $bestcat;
                 $a->rate = $bestrate;
@@ -172,7 +172,7 @@ class category_report extends base_report {
                 ];
             }
 
-            if ($worstcat && $worstrate < 20 && count($rates) >= 3) {
+            if ($worstcat && $worstrate < $this->threshold('insight_cat_worst', 20) && count($rates) >= 3) {
                 $a = new \stdClass();
                 $a->name = $worstcat;
                 $a->rate = $worstrate;

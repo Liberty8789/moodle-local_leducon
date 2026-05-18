@@ -419,5 +419,200 @@ if ($hassiteconfig) {
         ]
     ));
 
+    // =================================================================
+    // DASHBOARD CHARTS
+    // =================================================================
+    $settings->add(new admin_setting_heading(
+        'local_leducon/dashboard_heading',
+        get_string('settings_dashboard_heading', 'local_leducon'),
+        ''
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_leducon/dashboard_trend_weeks',
+        get_string('settings_dashboard_trend_weeks', 'local_leducon'),
+        get_string('settings_dashboard_trend_weeks_desc', 'local_leducon'),
+        12, PARAM_INT
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_leducon/dashboard_enrol_months',
+        get_string('settings_dashboard_enrol_months', 'local_leducon'),
+        get_string('settings_dashboard_enrol_months_desc', 'local_leducon'),
+        6, PARAM_INT
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_leducon/grade_bracket_1',
+        get_string('settings_grade_bracket_1', 'local_leducon'),
+        get_string('settings_grade_bracket_desc', 'local_leducon'),
+        '0,40,50,70,90,100', PARAM_TEXT
+    ));
+
+    // =================================================================
+    // MODULE FEATURE TOGGLES
+    // =================================================================
+    $settings->add(new admin_setting_heading(
+        'local_leducon/modules_heading',
+        get_string('settings_modules_heading', 'local_leducon'),
+        get_string('settings_modules_heading_desc', 'local_leducon')
+    ));
+
+    foreach (['quiz', 'assignment', 'forum', 'scorm', 'ilt'] as $mod) {
+        $settings->add(new admin_setting_configcheckbox(
+            'local_leducon/enable_' . $mod . '_reports',
+            get_string('settings_enable_' . $mod . '_reports', 'local_leducon'),
+            '',
+            1
+        ));
+    }
+
+    // =================================================================
+    // INSIGHT THRESHOLDS
+    // =================================================================
+    $settings->add(new admin_setting_heading(
+        'local_leducon/insight_heading',
+        get_string('settings_insight_heading', 'local_leducon'),
+        get_string('settings_insight_heading_desc', 'local_leducon')
+    ));
+
+    $insight_settings = [
+        'insight_completion_high'      => [70,  'settings_insight_completion_high'],
+        'insight_completion_low'       => [30,  'settings_insight_completion_low'],
+        'insight_completion_notstarted'=> [40,  'settings_insight_completion_notstarted'],
+        'insight_completion_best'      => [80,  'settings_insight_completion_best'],
+        'insight_compliance_high'      => [90,  'settings_insight_compliance_high'],
+        'insight_compliance_low'       => [50,  'settings_insight_compliance_low'],
+        'insight_grade_high'           => [75,  'settings_insight_grade_high'],
+        'insight_grade_low'            => [50,  'settings_insight_grade_low'],
+        'insight_quiz_highpass'        => [90,  'settings_insight_quiz_highpass'],
+        'insight_quiz_lowpass'         => [50,  'settings_insight_quiz_lowpass'],
+        'insight_quiz_longtime'        => [60,  'settings_insight_quiz_longtime'],
+        'insight_forum_active'         => [20,  'settings_insight_forum_active'],
+        'insight_assign_ungraded'      => [10,  'settings_insight_assign_ungraded'],
+        'insight_assign_ontime'        => [90,  'settings_insight_assign_ontime'],
+        'insight_assign_late_pct'      => [20,  'settings_insight_assign_late_pct'],
+        'insight_login_inactive_days'  => [30,  'settings_insight_login_inactive_days'],
+        'insight_login_poweruser'      => [50,  'settings_insight_login_poweruser'],
+        'insight_login_lowfreq'        => [3,   'settings_insight_login_lowfreq'],
+        'insight_login_multicourse'    => [3,   'settings_insight_login_multicourse'],
+        'insight_login_noact_pct'      => [25,  'settings_insight_login_noact_pct'],
+        'insight_ts_highavg'           => [120, 'settings_insight_ts_highavg'],
+        'insight_ts_lowavg'            => [30,  'settings_insight_ts_lowavg'],
+        'insight_ts_heavy'             => [300, 'settings_insight_ts_heavy'],
+        'insight_ts_light_pct'         => [30,  'settings_insight_ts_light_pct'],
+        'insight_badge_multi'          => [3,   'settings_insight_badge_multi'],
+        'insight_badge_volume'         => [50,  'settings_insight_badge_volume'],
+        'insight_cert_volume'          => [50,  'settings_insight_cert_volume'],
+        'insight_cert_achievers'       => [3,   'settings_insight_cert_achievers'],
+        'insight_cat_spread'           => [40,  'settings_insight_cat_spread'],
+        'insight_cat_best'             => [70,  'settings_insight_cat_best'],
+        'insight_cat_worst'            => [20,  'settings_insight_cat_worst'],
+        'insight_inst_highrate'        => [70,  'settings_insight_inst_highrate'],
+        'insight_inst_lowrate'         => [30,  'settings_insight_inst_lowrate'],
+        'insight_inst_highload'        => [200, 'settings_insight_inst_highload'],
+        'insight_mv_highrisk'          => [40,  'settings_insight_mv_highrisk'],
+        'insight_mv_topperformers'     => [3,   'settings_insight_mv_topperformers'],
+        'insight_atrisk_inactive_days' => [30,  'settings_insight_atrisk_inactive_days'],
+        'insight_atrisk_min_count'     => [3,   'settings_insight_atrisk_min_count'],
+        'insight_ilt_highattend'       => [85,  'settings_insight_ilt_highattend'],
+        'insight_ilt_lowattend'        => [60,  'settings_insight_ilt_lowattend'],
+        'insight_ilt_noshow_min'       => [5,   'settings_insight_ilt_noshow_min'],
+        'insight_ilt_highrating'       => [4,   'settings_insight_ilt_highrating'],
+        'insight_ilt_lowrating'        => [3,   'settings_insight_ilt_lowrating'],
+        'insight_ilt_facilitator_count' => [3,  'settings_insight_ilt_facilitator_count'],
+        'insight_ilt_dept_count'       => [3,   'settings_insight_ilt_dept_count'],
+    ];
+    foreach ($insight_settings as $key => [$default, $langkey]) {
+        $settings->add(new admin_setting_configtext(
+            'local_leducon/' . $key,
+            get_string($langkey, 'local_leducon'),
+            '', $default, PARAM_RAW
+        ));
+    }
+
+    // =================================================================
+    // MISCELLANEOUS
+    // =================================================================
+    $settings->add(new admin_setting_heading(
+        'local_leducon/misc_heading',
+        get_string('settings_misc_heading', 'local_leducon'),
+        ''
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_leducon/mins_per_log_event',
+        get_string('settings_mins_per_log_event', 'local_leducon'),
+        get_string('settings_mins_per_log_event_desc', 'local_leducon'),
+        3, PARAM_INT
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_leducon/quiz_firstpass_threshold',
+        get_string('settings_quiz_firstpass_threshold', 'local_leducon'),
+        get_string('settings_quiz_firstpass_threshold_desc', 'local_leducon'),
+        50, PARAM_INT
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_leducon/streak_milestones',
+        get_string('settings_streak_milestones', 'local_leducon'),
+        get_string('settings_streak_milestones_desc', 'local_leducon'),
+        '7,30,90,365', PARAM_TEXT
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_leducon/scheduler_daily_buffer',
+        get_string('settings_scheduler_daily_buffer', 'local_leducon'),
+        get_string('settings_scheduler_daily_buffer_desc', 'local_leducon'),
+        20, PARAM_INT
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_leducon/scheduler_weekly_buffer',
+        get_string('settings_scheduler_weekly_buffer', 'local_leducon'),
+        get_string('settings_scheduler_weekly_buffer_desc', 'local_leducon'),
+        5, PARAM_INT
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_leducon/scheduler_monthly_buffer',
+        get_string('settings_scheduler_monthly_buffer', 'local_leducon'),
+        get_string('settings_scheduler_monthly_buffer_desc', 'local_leducon'),
+        25, PARAM_INT
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_leducon/precompute_period_days',
+        get_string('settings_precompute_period_days', 'local_leducon'),
+        get_string('settings_precompute_period_days_desc', 'local_leducon'),
+        30, PARAM_INT
+    ));
+
+    // =================================================================
+    // THEME / COLORS
+    // =================================================================
+    $settings->add(new admin_setting_heading(
+        'local_leducon/theme_heading',
+        get_string('settings_theme_heading', 'local_leducon'),
+        get_string('settings_theme_heading_desc', 'local_leducon')
+    ));
+
+    $theme_colors = [
+        'color_primary'   => ['#2563eb', 'settings_color_primary'],
+        'color_success'   => ['#16a34a', 'settings_color_success'],
+        'color_warning'   => ['#d97706', 'settings_color_warning'],
+        'color_danger'    => ['#dc2626', 'settings_color_danger'],
+        'color_info'      => ['#0891b2', 'settings_color_info'],
+        'color_purple'    => ['#7c3aed', 'settings_color_purple'],
+    ];
+    foreach ($theme_colors as $key => [$default, $langkey]) {
+        $settings->add(new admin_setting_configtext(
+            'local_leducon/' . $key,
+            get_string($langkey, 'local_leducon'),
+            '', $default, PARAM_TEXT
+        ));
+    }
+
     $ADMIN->add('localplugins', $settings);
 }

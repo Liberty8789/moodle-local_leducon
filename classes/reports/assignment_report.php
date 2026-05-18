@@ -131,7 +131,7 @@ class assignment_report extends base_report {
         // Late submissions warning.
         if ($totallate > 0 && $totalsub > 0) {
             $latepct = round($totallate / $totalsub * 100);
-            if ($latepct >= 20) {
+            if ($latepct >= $this->threshold('insight_assign_late_pct', 20)) {
                 $insights[] = [
                     'icon'   => "\xE2\x8F\xB0",
                     'type'   => 'warning',
@@ -142,7 +142,7 @@ class assignment_report extends base_report {
         }
 
         // Grading backlog.
-        if ($totalungrad > 10) {
+        if ($totalungrad > $this->threshold('insight_assign_ungraded', 10)) {
             $insights[] = [
                 'icon'   => "\xF0\x9F\x93\x9D",
                 'type'   => 'danger',
@@ -155,7 +155,7 @@ class assignment_report extends base_report {
         $totalontime = array_sum(array_column($data, 'ontime'));
         if ($totalsub > 0) {
             $ontimepct = round($totalontime / $totalsub * 100);
-            if ($ontimepct >= 90) {
+            if ($ontimepct >= $this->threshold('insight_assign_ontime', 90)) {
                 $insights[] = [
                     'icon'   => "\xE2\x9C\x85",
                     'type'   => 'success',

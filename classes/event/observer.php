@@ -52,7 +52,8 @@ class observer {
 
         // First-pass bonus: check if this is the first submission and grade >= 50% of max score.
         $max_grade = (float)($DB->get_field('quiz', 'sumgrades', ['id' => $attempt->quiz]) ?: 0);
-        if ($max_grade > 0 && (float)$attempt->sumgrades >= ($max_grade * 0.5)) {
+        $firstpass_pct = (int)(get_config('local_leducon', 'quiz_firstpass_threshold') ?: 50) / 100;
+        if ($max_grade > 0 && (float)$attempt->sumgrades >= ($max_grade * $firstpass_pct)) {
             $prior = $DB->count_records_select(
                 'quiz_attempts',
                 'quiz = :qid AND userid = :uid AND state = :st AND id < :aid',

@@ -192,7 +192,7 @@ class atrisk_report extends base_report {
                 $high++;
             }
             $days = $row['daysinactive'] ?? '-';
-            if ($days !== '-' && (int)$days >= 30) {
+            if ($days !== '-' && (int)$days >= $this->threshold('insight_atrisk_inactive_days', 30)) {
                 $inactive_only++;
             }
             $coursename = $row['course'] ?? '';
@@ -216,7 +216,7 @@ class atrisk_report extends base_report {
         }
 
         // Long-inactive learners.
-        if ($inactive_only >= 3) {
+        if ($inactive_only >= $this->threshold('insight_atrisk_min_count', 3)) {
             $insights[] = [
                 'icon'   => "\xE2\x8F\xB0",
                 'type'   => 'warning',
@@ -230,7 +230,7 @@ class atrisk_report extends base_report {
             arsort($courses);
             $topcoursename = key($courses);
             $topcoursecount = current($courses);
-            if ($topcoursecount >= 3) {
+            if ($topcoursecount >= $this->threshold('insight_atrisk_min_count', 3)) {
                 $insights[] = [
                     'icon'   => "\xF0\x9F\x93\x8A",
                     'type'   => 'info',

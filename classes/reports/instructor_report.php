@@ -139,7 +139,7 @@ class instructor_report extends base_report {
             if ($rate > 0) {
                 $rates[] = $rate;
             }
-            if ((int)$row['students'] >= 200) {
+            if ((int)$row['students'] >= $this->threshold('insight_inst_highload', 200)) {
                 $highload++;
             }
             if ($row['lastactive'] === '-') {
@@ -149,14 +149,14 @@ class instructor_report extends base_report {
 
         if (!empty($rates)) {
             $avgrate = round(array_sum($rates) / count($rates), 1);
-            if ($avgrate >= 70) {
+            if ($avgrate >= $this->threshold('insight_inst_highrate', 70)) {
                 $insights[] = [
                     'icon'   => "\xF0\x9F\x8C\x9F",
                     'type'   => 'success',
                     'title'  => get_string('insight_inst_highrate', 'local_leducon', $avgrate),
                     'detail' => get_string('insight_inst_highrate_detail', 'local_leducon'),
                 ];
-            } elseif ($avgrate < 30) {
+            } elseif ($avgrate < $this->threshold('insight_inst_lowrate', 30)) {
                 $insights[] = [
                     'icon'   => "\xE2\x9A\xA0\xEF\xB8\x8F",
                     'type'   => 'warning',

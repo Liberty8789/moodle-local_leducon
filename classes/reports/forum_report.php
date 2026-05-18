@@ -114,7 +114,7 @@ class forum_report extends base_report {
             if ((int)$row['posts'] === 0) {
                 $deadforums++;
             }
-            if ((int)$row['posts'] >= 20) {
+            if ((int)$row['posts'] >= $this->threshold('insight_forum_active', 20)) {
                 $activeforums++;
             }
         }

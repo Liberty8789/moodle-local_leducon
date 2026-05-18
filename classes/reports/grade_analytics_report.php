@@ -150,14 +150,14 @@ class grade_analytics_report extends base_report {
 
         $overall = count($avgs) > 0 ? round(array_sum($avgs) / count($avgs), 1) : 0;
 
-        if ($overall >= 75) {
+        if ($overall >= $this->threshold('insight_grade_high', 75)) {
             $insights[] = [
                 'icon'   => "\xF0\x9F\x8C\x9F",
                 'type'   => 'success',
                 'title'  => get_string('insight_ga_highavg', 'local_leducon', $overall),
                 'detail' => get_string('insight_ga_highavg_detail', 'local_leducon'),
             ];
-        } elseif ($overall < 50 && count($avgs) >= 3) {
+        } elseif ($overall < $this->threshold('insight_grade_low', 50) && count($avgs) >= 3) {
             $insights[] = [
                 'icon'   => "\xE2\x9A\xA0\xEF\xB8\x8F",
                 'type'   => 'danger',

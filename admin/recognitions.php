@@ -42,7 +42,7 @@ if ($action === 'delete' && confirm_sesskey() && $recid) {
 }
 
 $page    = optional_param('page', 0, PARAM_INT);
-$perpage = 30;
+$perpage = (int)(get_config('local_leducon', 'listperpage') ?: 50);
 $total   = $DB->count_records('local_leducon_recognition');
 $fullname_sender    = $DB->sql_fullname('s.firstname', 's.lastname');
 $fullname_recipient = $DB->sql_fullname('r.firstname', 'r.lastname');

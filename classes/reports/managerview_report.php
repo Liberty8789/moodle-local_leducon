@@ -135,7 +135,7 @@ class managerview_report extends base_report {
 
         $atriskpct = round($atrisk / $total * 100);
 
-        if ($atriskpct >= 40) {
+        if ($atriskpct >= $this->threshold('insight_mv_highrisk', 40)) {
             $insights[] = [
                 'icon'   => "\xF0\x9F\x9A\xA8",
                 'type'   => 'danger',
@@ -151,7 +151,7 @@ class managerview_report extends base_report {
             ];
         }
 
-        if ($highperformers >= 3) {
+        if ($highperformers >= $this->threshold('insight_mv_topperformers', 3)) {
             $insights[] = [
                 'icon'   => "\xE2\xAD\x90",
                 'type'   => 'success',

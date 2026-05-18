@@ -75,15 +75,18 @@ class report_scheduler extends \core\task\scheduled_task {
         // Check if already sent this period.
         if ($sched->last_sent > 0) {
             $gap = $now - $sched->last_sent;
+            $dbuf = (int)(get_config('local_leducon', 'scheduler_daily_buffer') ?: 20);
+            $wbuf = (int)(get_config('local_leducon', 'scheduler_weekly_buffer') ?: 5);
+            $mbuf = (int)(get_config('local_leducon', 'scheduler_monthly_buffer') ?: 25);
             switch ($sched->frequency) {
                 case 'daily':
-                    if ($gap < 20 * 3600) return false; // 20h buffer
+                    if ($gap < $dbuf * 3600) return false;
                     break;
                 case 'weekly':
-                    if ($gap < 5 * DAYSECS) return false; // 5d buffer
+                    if ($gap < $wbuf * DAYSECS) return false;
                     break;
                 case 'monthly':
-                    if ($gap < 25 * DAYSECS) return false; // 25d buffer
+                    if ($gap < $mbuf * DAYSECS) return false;
                     break;
             }
         }

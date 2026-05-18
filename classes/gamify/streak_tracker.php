@@ -83,7 +83,9 @@ class streak_tracker {
     }
 
     private static function check_milestone_xp(int $userid, int $streak): void {
-        foreach ([7, 30, 90, 365] as $days) {
+        $milestonestr = get_config('local_leducon', 'streak_milestones') ?: '7,30,90,365';
+        $milestones = array_map('intval', array_filter(explode(',', $milestonestr)));
+        foreach ($milestones as $days) {
             if ($streak === $days) {
                 $bonus = (int)(get_config('local_leducon', 'xp_streak_' . $days) ?: 0);
                 if ($bonus > 0) {

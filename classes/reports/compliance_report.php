@@ -146,14 +146,14 @@ class compliance_report extends base_report {
 
         $rate = $total > 0 ? round($completed / $total * 100, 1) : 0;
 
-        if ($rate >= 90) {
+        if ($rate >= $this->threshold('insight_compliance_high', 90)) {
             $insights[] = [
                 'icon'   => "\xE2\x9C\x85",
                 'type'   => 'success',
                 'title'  => get_string('insight_comp_highrate', 'local_leducon', $rate),
                 'detail' => get_string('insight_comp_highrate_detail', 'local_leducon'),
             ];
-        } elseif ($rate < 50 && $total >= 10) {
+        } elseif ($rate < $this->threshold('insight_compliance_low', 50) && $total >= 10) {
             $insights[] = [
                 'icon'   => "\xF0\x9F\x9A\xA8",
                 'type'   => 'danger',

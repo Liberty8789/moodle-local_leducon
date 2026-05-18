@@ -120,14 +120,14 @@ class course_completion_report extends base_report {
         $overallrate    = $totalenrolled > 0 ? round($totalcompleted / $totalenrolled * 100, 1) : 0;
 
         // Overall completion rate insight.
-        if ($overallrate >= 70) {
+        if ($overallrate >= $this->threshold('insight_completion_high', 70)) {
             $insights[] = [
                 'icon'   => "\xF0\x9F\x8E\xAF",
                 'type'   => 'success',
                 'title'  => get_string('insight_cc_highrate', 'local_leducon', $overallrate),
                 'detail' => get_string('insight_cc_highrate_detail', 'local_leducon'),
             ];
-        } elseif ($overallrate < 30 && $totalenrolled >= 10) {
+        } elseif ($overallrate < $this->threshold('insight_completion_low', 30) && $totalenrolled >= 10) {
             $insights[] = [
                 'icon'   => "\xE2\x9A\xA0\xEF\xB8\x8F",
                 'type'   => 'warning',
@@ -166,7 +166,7 @@ class course_completion_report extends base_report {
         // Not-started learners.
         if ($totalnotstarted > 0 && $totalenrolled > 0) {
             $nspct = round($totalnotstarted / $totalenrolled * 100);
-            if ($nspct >= 40) {
+            if ($nspct >= $this->threshold('insight_completion_notstarted', 40)) {
                 $insights[] = [
                     'icon'   => "\xF0\x9F\x92\xA4",
                     'type'   => 'warning',
@@ -177,7 +177,7 @@ class course_completion_report extends base_report {
         }
 
         // Top performing course.
-        if ($bestcourse && $bestrate >= 80) {
+        if ($bestcourse && $bestrate >= $this->threshold('insight_completion_best', 80)) {
             $a = new \stdClass();
             $a->name = $bestcourse;
             $a->rate = round($bestrate, 1);

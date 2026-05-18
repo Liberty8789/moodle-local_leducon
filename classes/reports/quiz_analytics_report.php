@@ -134,10 +134,10 @@ class quiz_analytics_report extends base_report {
 
         foreach ($data as $row) {
             $pr = (float) rtrim($row['passrate'], '%');
-            if ($pr < 50 && $pr > 0) {
+            if ($pr < $this->threshold('insight_quiz_lowpass', 50) && $pr > 0) {
                 $lowpass++;
             }
-            if ($pr >= 90) {
+            if ($pr >= $this->threshold('insight_quiz_highpass', 90)) {
                 $highpass++;
             }
             $avgmin = is_numeric($row['avgtime']) ? (float)$row['avgtime'] : 0;
@@ -165,7 +165,7 @@ class quiz_analytics_report extends base_report {
             ];
         }
 
-        if ($longesttime >= 60) {
+        if ($longesttime >= $this->threshold('insight_quiz_longtime', 60)) {
             $a = new \stdClass();
             $a->name = $longestquiz;
             $a->mins = round($longesttime);

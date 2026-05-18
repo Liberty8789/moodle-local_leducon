@@ -131,7 +131,7 @@ class badge_report extends base_report {
 
         $avgper = $uniquerecipients > 0 ? round($totalissued / $uniquerecipients, 1) : 0;
 
-        if ($avgper >= 3) {
+        if ($avgper >= $this->threshold('insight_badge_multi', 3)) {
             $insights[] = [
                 'icon'   => "\xF0\x9F\x8F\x85",
                 'type'   => 'success',

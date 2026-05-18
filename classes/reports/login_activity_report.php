@@ -122,16 +122,16 @@ class login_activity_report extends base_report {
 
         foreach ($data as $row) {
             $days = $row['daysinactive'];
-            if (is_numeric($days) && (int)$days >= 30) {
+            if (is_numeric($days) && (int)$days >= $this->threshold('insight_login_inactive_days', 30)) {
                 $inactive30++;
             }
-            if ((int)$row['totallogins'] >= 50) {
+            if ((int)$row['totallogins'] >= $this->threshold('insight_login_poweruser', 50)) {
                 $powerusers++;
             }
             if ((int)$row['activitiescomp'] === 0) {
                 $zeroacts++;
             }
-            if ((int)$row['coursesactive'] >= 3) {
+            if ((int)$row['coursesactive'] >= $this->threshold('insight_login_multicourse', 3)) {
                 $multicourse++;
             }
         }
@@ -156,7 +156,7 @@ class login_activity_report extends base_report {
         }
 
         $avglogins = round($totallogins / $totalusers, 1);
-        if ($avglogins < 3) {
+        if ($avglogins < $this->threshold('insight_login_lowfreq', 3)) {
             $insights[] = [
                 'icon'   => "\xF0\x9F\x93\x89",
                 'type'   => 'danger',
@@ -176,7 +176,7 @@ class login_activity_report extends base_report {
 
         if ($zeroacts > 0 && $totalusers > 3) {
             $zeropct = round($zeroacts / $totalusers * 100);
-            if ($zeropct >= 25) {
+            if ($zeropct >= $this->threshold('insight_login_noact_pct', 25)) {
                 $insights[] = [
                     'icon'   => "\xE2\x9A\xA0\xEF\xB8\x8F",
                     'type'   => 'warning',

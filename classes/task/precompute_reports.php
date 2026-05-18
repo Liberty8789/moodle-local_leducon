@@ -36,7 +36,8 @@ class precompute_reports extends \core\task\scheduled_task {
         global $DB;
 
         $now = time();
-        $thirtyago = $now - 30 * DAYSECS;
+        $precomputedays = (int)(get_config('local_leducon', 'precompute_period_days') ?: 30);
+        $thirtyago = $now - $precomputedays * DAYSECS;
 
         $totalusers = (int) $DB->count_records_select('user', 'deleted = 0 AND suspended = 0 AND id > 1');
 

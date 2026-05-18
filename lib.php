@@ -637,9 +637,8 @@ function local_leducon_get_filter_params(): array {
 // =====================================================================
 
 function local_leducon_get_report_types(): array {
-    return [
+    $types = [
         'course_completion' => get_string('report_course_completion', 'local_leducon'),
-        // user_activity merged into login_activity (kept as alias for backward compat).
         'grade_analytics'   => get_string('report_grade_analytics',   'local_leducon'),
         'enrollment'        => get_string('report_enrollment',        'local_leducon'),
         'quiz_analytics'    => get_string('report_quiz_analytics',    'local_leducon'),
@@ -660,6 +659,21 @@ function local_leducon_get_report_types(): array {
         'skills'            => get_string('report_skills',            'local_leducon'),
         'roi_analyst'       => get_string('report_roi_analyst',       'local_leducon'),
     ];
+
+    $togglemap = [
+        'quiz_analytics'  => 'enable_quiz_reports',
+        'assignment'      => 'enable_assignment_reports',
+        'forum'           => 'enable_forum_reports',
+        'scorm_analytics' => 'enable_scorm_reports',
+        'ilt'             => 'enable_ilt_reports',
+    ];
+    foreach ($togglemap as $key => $setting) {
+        if (!get_config('local_leducon', $setting)) {
+            unset($types[$key]);
+        }
+    }
+
+    return $types;
 }
 
 /**

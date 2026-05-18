@@ -101,7 +101,8 @@ if ($cananalytics) {
     } catch (\dml_exception $e) {}
 
     try {
-        $cutoff = $now - 14 * DAYSECS;
+        $atrisk_days = (int)(get_config('local_leducon', 'atrisk_inactive_days') ?: 14);
+        $cutoff = $now - $atrisk_days * DAYSECS;
         $kpi['atrisk'] = (int)$DB->get_field_sql(
             "SELECT COUNT(DISTINCT ue.userid)
                FROM {user_enrolments} ue
@@ -137,13 +138,21 @@ if ($gamify_enabled) {
 // ------------------------------------------------------------------
 // KPI card definitions.
 // ------------------------------------------------------------------
+$tc = [
+    'primary' => get_config('local_leducon', 'color_primary') ?: '#2563eb',
+    'success' => get_config('local_leducon', 'color_success') ?: '#16a34a',
+    'info'    => get_config('local_leducon', 'color_info')    ?: '#0891b2',
+    'purple'  => get_config('local_leducon', 'color_purple')  ?: '#7c3aed',
+    'warning' => get_config('local_leducon', 'color_warning') ?: '#d97706',
+    'danger'  => get_config('local_leducon', 'color_danger')  ?: '#dc2626',
+];
 $kpi_cards = [
-    ['label' => get_string('kpi_active_users',    'local_leducon'), 'value' => number_format($kpi['active_users']),   'accent' => '#2563eb', 'icon' => '&#128100;'],
-    ['label' => get_string('kpi_completions',     'local_leducon'), 'value' => number_format($kpi['completions']),    'accent' => '#16a34a', 'icon' => '&#10003;'],
-    ['label' => get_string('kpi_enrolments',      'local_leducon'), 'value' => number_format($kpi['enrolments']),     'accent' => '#0891b2', 'icon' => '&#43;'],
-    ['label' => get_string('kpi_completion_rate', 'local_leducon'), 'value' => $kpi['completion_rate'] . '%',         'accent' => '#7c3aed', 'icon' => '&#128202;'],
-    ['label' => get_string('kpi_avg_grade',       'local_leducon'), 'value' => $kpi['avg_grade'] . '%',               'accent' => '#d97706', 'icon' => '&#9733;'],
-    ['label' => get_string('kpi_atrisk',          'local_leducon'), 'value' => number_format($kpi['atrisk']),         'accent' => '#dc2626', 'icon' => '&#9888;'],
+    ['label' => get_string('kpi_active_users',    'local_leducon'), 'value' => number_format($kpi['active_users']),   'accent' => $tc['primary'], 'icon' => '&#128100;'],
+    ['label' => get_string('kpi_completions',     'local_leducon'), 'value' => number_format($kpi['completions']),    'accent' => $tc['success'], 'icon' => '&#10003;'],
+    ['label' => get_string('kpi_enrolments',      'local_leducon'), 'value' => number_format($kpi['enrolments']),     'accent' => $tc['info'],    'icon' => '&#43;'],
+    ['label' => get_string('kpi_completion_rate', 'local_leducon'), 'value' => $kpi['completion_rate'] . '%',         'accent' => $tc['purple'],  'icon' => '&#128202;'],
+    ['label' => get_string('kpi_avg_grade',       'local_leducon'), 'value' => $kpi['avg_grade'] . '%',               'accent' => $tc['warning'], 'icon' => '&#9733;'],
+    ['label' => get_string('kpi_atrisk',          'local_leducon'), 'value' => number_format($kpi['atrisk']),         'accent' => $tc['danger'],  'icon' => '&#9888;'],
 ];
 
 // Period pill labels.
@@ -157,23 +166,23 @@ $period_pills = [
 
 // Quick-launch tile metadata.
 $ql_meta = [
-    'course_completion' => ['icon' => '&#9989;',  'accent' => '#16a34a'],
-    'user_activity'     => ['icon' => '&#128200;', 'accent' => '#2563eb'],
-    'grade_analytics'   => ['icon' => '&#9733;',  'accent' => '#d97706'],
-    'enrollment'        => ['icon' => '&#43;',    'accent' => '#0891b2'],
-    'quiz_analytics'    => ['icon' => '&#10067;', 'accent' => '#7c3aed'],
+    'course_completion' => ['icon' => '&#9989;',  'accent' => $tc['success']],
+    'user_activity'     => ['icon' => '&#128200;', 'accent' => $tc['primary']],
+    'grade_analytics'   => ['icon' => '&#9733;',  'accent' => $tc['warning']],
+    'enrollment'        => ['icon' => '&#43;',    'accent' => $tc['info']],
+    'quiz_analytics'    => ['icon' => '&#10067;', 'accent' => $tc['purple']],
     'login_activity'    => ['icon' => '&#128274;', 'accent' => '#6b7280'],
-    'scorm_analytics'   => ['icon' => '&#127760;', 'accent' => '#059669'],
-    'assignment'        => ['icon' => '&#128196;', 'accent' => '#0369a1'],
-    'forum'             => ['icon' => '&#128172;', 'accent' => '#0891b2'],
-    'atrisk'            => ['icon' => '&#9888;',  'accent' => '#dc2626'],
-    'timespent'         => ['icon' => '&#9201;',  'accent' => '#6366f1'],
-    'badge'             => ['icon' => '&#127942;', 'accent' => '#d97706'],
-    'certificate'       => ['icon' => '&#127881;', 'accent' => '#16a34a'],
-    'compliance'        => ['icon' => '&#10004;', 'accent' => '#2563eb'],
-    'category'          => ['icon' => '&#128193;', 'accent' => '#7c3aed'],
-    'instructor'        => ['icon' => '&#128104;&#8205;&#127979;', 'accent' => '#0891b2'],
-    'ilt'               => ['icon' => '&#127979;', 'accent' => '#059669'],
+    'scorm_analytics'   => ['icon' => '&#127760;', 'accent' => $tc['success']],
+    'assignment'        => ['icon' => '&#128196;', 'accent' => $tc['primary']],
+    'forum'             => ['icon' => '&#128172;', 'accent' => $tc['info']],
+    'atrisk'            => ['icon' => '&#9888;',  'accent' => $tc['danger']],
+    'timespent'         => ['icon' => '&#9201;',  'accent' => $tc['purple']],
+    'badge'             => ['icon' => '&#127942;', 'accent' => $tc['warning']],
+    'certificate'       => ['icon' => '&#127881;', 'accent' => $tc['success']],
+    'compliance'        => ['icon' => '&#10004;', 'accent' => $tc['primary']],
+    'category'          => ['icon' => '&#128193;', 'accent' => $tc['purple']],
+    'instructor'        => ['icon' => '&#128104;&#8205;&#127979;', 'accent' => $tc['info']],
+    'ilt'               => ['icon' => '&#127979;', 'accent' => $tc['success']],
 ];
 
 // ------------------------------------------------------------------
@@ -184,7 +193,8 @@ $ql_meta = [
 $chart_trend_labels = [];
 $chart_trend_values = [];
 if ($cananalytics) {
-    for ($i = 11; $i >= 0; $i--) {
+    $trendweeks = (int)(get_config('local_leducon', 'dashboard_trend_weeks') ?: 12);
+    for ($i = $trendweeks - 1; $i >= 0; $i--) {
         $wstart = $now - ($i + 1) * 7 * DAYSECS;
         $wend   = $now - $i * 7 * DAYSECS;
         $chart_trend_labels[] = date('d M', (int)$wend);
@@ -234,22 +244,38 @@ if ($cananalytics) {
 
 // Chart data: Grade distribution (bar chart — 5 buckets).
 // DB-side aggregation — never loads individual grades into PHP.
-$chart_grade_labels  = ['0–39%', '40–49%', '50–69%', '70–89%', '90–100%'];
-$chart_grade_values  = [0, 0, 0, 0, 0];
+$bracketstr = get_config('local_leducon', 'grade_bracket_1') ?: '0,40,50,70,90,100';
+$brackets = array_map('intval', explode(',', $bracketstr));
+if (count($brackets) < 3) {
+    $brackets = [0, 40, 50, 70, 90, 100];
+}
+$chart_grade_labels = [];
+$chart_grade_values = [];
+$grade_cases = [];
+for ($bi = 0; $bi < count($brackets) - 1; $bi++) {
+    $lo = $brackets[$bi];
+    $hi = $brackets[$bi + 1];
+    $chart_grade_labels[] = $lo . '–' . ($hi - 1) . '%';
+    $chart_grade_values[] = 0;
+    if ($bi === count($brackets) - 2) {
+        $grade_cases[] = "SUM(CASE WHEN gg.finalgrade / gi.grademax * 100 >= {$lo} THEN 1 ELSE 0 END) AS g{$bi}";
+        $chart_grade_labels[$bi] = $lo . '–100%';
+    } else {
+        $grade_cases[] = "SUM(CASE WHEN gg.finalgrade / gi.grademax * 100 >= {$lo} AND gg.finalgrade / gi.grademax * 100 < {$hi} THEN 1 ELSE 0 END) AS g{$bi}";
+    }
+}
 if ($cananalytics) {
-    $grade_sql = "SELECT
-        SUM(CASE WHEN gg.finalgrade / gi.grademax * 100 < 40 THEN 1 ELSE 0 END) AS g0,
-        SUM(CASE WHEN gg.finalgrade / gi.grademax * 100 >= 40 AND gg.finalgrade / gi.grademax * 100 < 50 THEN 1 ELSE 0 END) AS g1,
-        SUM(CASE WHEN gg.finalgrade / gi.grademax * 100 >= 50 AND gg.finalgrade / gi.grademax * 100 < 70 THEN 1 ELSE 0 END) AS g2,
-        SUM(CASE WHEN gg.finalgrade / gi.grademax * 100 >= 70 AND gg.finalgrade / gi.grademax * 100 < 90 THEN 1 ELSE 0 END) AS g3,
-        SUM(CASE WHEN gg.finalgrade / gi.grademax * 100 >= 90 THEN 1 ELSE 0 END) AS g4
+    $grade_sql = "SELECT " . implode(",\n        ", $grade_cases) . "
       FROM {grade_grades} gg
       JOIN {grade_items} gi ON gi.id = gg.itemid AND gi.itemtype = 'course' AND gi.grademax > 0
      WHERE gg.finalgrade IS NOT NULL";
     try {
         $grow = $DB->get_record_sql($grade_sql);
         if ($grow) {
-            $chart_grade_values = [(int)$grow->g0, (int)$grow->g1, (int)$grow->g2, (int)$grow->g3, (int)$grow->g4];
+            for ($bi = 0; $bi < count($brackets) - 1; $bi++) {
+                $field = 'g' . $bi;
+                $chart_grade_values[$bi] = (int)($grow->$field ?? 0);
+            }
         }
     } catch (\Exception $e) {}
 }
@@ -259,7 +285,8 @@ if ($cananalytics) {
 $chart_enrol_labels = [];
 $chart_enrol_values = [];
 if ($cananalytics) {
-    for ($i = 5; $i >= 0; $i--) {
+    $enrolmonths = (int)(get_config('local_leducon', 'dashboard_enrol_months') ?: 6);
+    for ($i = $enrolmonths - 1; $i >= 0; $i--) {
         $mstart = strtotime(date('Y-m-01', strtotime("-{$i} months")));
         $mend   = strtotime(date('Y-m-01', strtotime("-" . ($i - 1) . " months")));
         $chart_enrol_labels[] = date('M Y', $mstart);

@@ -84,7 +84,7 @@ class certificate_report extends base_report {
         $uniquerecipients = count(array_unique(array_column($data, 'userid')));
         $uniquecerts      = count(array_unique(array_column($data, 'certname')));
 
-        if ($totalissued >= 50) {
+        if ($totalissued >= $this->threshold('insight_cert_volume', 50)) {
             $insights[] = [
                 'icon'   => "\xF0\x9F\x93\x9C",
                 'type'   => 'success',
@@ -96,7 +96,7 @@ class certificate_report extends base_report {
         // Concentration: many certs, few recipients.
         if ($uniquerecipients > 0 && $totalissued > 0) {
             $ratio = round($totalissued / $uniquerecipients, 1);
-            if ($ratio >= 3) {
+            if ($ratio >= $this->threshold('insight_cert_achievers', 3)) {
                 $insights[] = [
                     'icon'   => "\xF0\x9F\x8E\x93",
                     'type'   => 'info',

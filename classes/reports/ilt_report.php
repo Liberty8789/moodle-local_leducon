@@ -183,10 +183,10 @@ class ilt_report extends base_report {
             $totalnoshow     += $row['_raw_noshow'];
             $totalcost       += $row['_raw_cost'];
 
-            if ($row['_raw_atrate'] < 60 && $row['_raw_registered'] >= 5) {
+            if ($row['_raw_atrate'] < $this->threshold('insight_ilt_lowattend', 60) && $row['_raw_registered'] >= 5) {
                 $lowattend++;
             }
-            if ($row['_raw_atrate'] >= 90) {
+            if ($row['_raw_atrate'] >= $this->threshold('insight_ilt_highattend', 85)) {
                 $highattend++;
             }
             if (is_numeric($row['_raw_rating'])) {
@@ -206,14 +206,14 @@ class ilt_report extends base_report {
         // Overall attendance rate.
         if ($totalregistered > 0) {
             $overallatrate = round($totalattended / $totalregistered * 100, 1);
-            if ($overallatrate >= 85) {
+            if ($overallatrate >= $this->threshold('insight_ilt_highattend', 85)) {
                 $insights[] = [
                     'icon'   => "\xE2\x9C\x85",
                     'type'   => 'success',
                     'title'  => get_string('insight_ilt_highattend', 'local_leducon', $overallatrate),
                     'detail' => get_string('insight_ilt_highattend_detail', 'local_leducon'),
                 ];
-            } elseif ($overallatrate < 60) {
+            } elseif ($overallatrate < $this->threshold('insight_ilt_lowattend', 60)) {
                 $insights[] = [
                     'icon'   => "\xE2\x9A\xA0\xEF\xB8\x8F",
                     'type'   => 'danger',
@@ -224,7 +224,7 @@ class ilt_report extends base_report {
         }
 
         // No-show cost waste.
-        if ($totalnoshow > 5 && $totalcost > 0 && $totalregistered > 0) {
+        if ($totalnoshow > $this->threshold('insight_ilt_noshow_min', 5) && $totalcost > 0 && $totalregistered > 0) {
             $costperhead = $totalcost / $totalregistered;
             $wastedcost = round($costperhead * $totalnoshow, 2);
             $a = new \stdClass();
@@ -236,7 +236,7 @@ class ilt_report extends base_report {
                 'title'  => get_string('insight_ilt_costwaste', 'local_leducon', $a),
                 'detail' => get_string('insight_ilt_costwaste_detail', 'local_leducon'),
             ];
-        } elseif ($totalnoshow > 5) {
+        } elseif ($totalnoshow > $this->threshold('insight_ilt_noshow_min', 5)) {
             $insights[] = [
                 'icon'   => "\xF0\x9F\x9A\xAB",
                 'type'   => 'warning',
@@ -260,7 +260,7 @@ class ilt_report extends base_report {
             arsort($facilitators);
             $topfac = array_keys($facilitators)[0];
             $topcount = $facilitators[$topfac];
-            if ($topcount >= 3) {
+            if ($topcount >= $this->threshold('insight_ilt_facilitator_count', 3)) {
                 $a = new \stdClass();
                 $a->name = $topfac;
                 $a->count = $topcount;
@@ -276,14 +276,14 @@ class ilt_report extends base_report {
         // Average rating.
         if (!empty($ratings)) {
             $avgr = round(array_sum($ratings) / count($ratings), 1);
-            if ($avgr >= 4.0) {
+            if ($avgr >= $this->threshold('insight_ilt_highrating', 4.0)) {
                 $insights[] = [
                     'icon'   => "\xE2\xAD\x90",
                     'type'   => 'success',
                     'title'  => get_string('insight_ilt_highrating', 'local_leducon', $avgr),
                     'detail' => get_string('insight_ilt_highrating_detail', 'local_leducon'),
                 ];
-            } elseif ($avgr < 3.0) {
+            } elseif ($avgr < $this->threshold('insight_ilt_lowrating', 3.0)) {
                 $insights[] = [
                     'icon'   => "\xF0\x9F\x93\x89",
                     'type'   => 'danger',
@@ -294,7 +294,7 @@ class ilt_report extends base_report {
         }
 
         // Department engagement.
-        if (count($departments) >= 3) {
+        if (count($departments) >= $this->threshold('insight_ilt_dept_count', 3)) {
             arsort($departments);
             $topdept = array_keys($departments)[0];
             $insights[] = [

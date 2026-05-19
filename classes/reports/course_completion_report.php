@@ -63,14 +63,21 @@ class course_completion_report extends base_report {
                        c.fullname                                            AS coursename,
                        cc2.name                                              AS category,
                        COUNT(DISTINCT ue.userid)                             AS enrolled,
-                       COUNT(DISTINCT CASE WHEN ccomp.timecompleted IS NOT NULL
-                                 AND ccomp.timecompleted BETWEEN :from AND :to
-                                THEN ccomp.userid ELSE NULL END)             AS completed,
-                       COUNT(DISTINCT CASE WHEN ccomp.timecompleted IS NULL
+                       COUNT(DISTINCT CASE WHEN (ccomp.timecompleted IS NOT NULL
+                                 AND ccomp.timecompleted BETWEEN :from AND :to)
+                                 OR (gg_cc.finalgrade IS NOT NULL AND gi_cc.grademax > 0
+                                     AND gg_cc.finalgrade / gi_cc.grademax * 100 >= 100
+                                     AND gg_cc.timemodified BETWEEN :gfrom AND :gto)
+                                THEN ue.userid ELSE NULL END)                AS completed,
+                       COUNT(DISTINCT CASE WHEN (ccomp.timecompleted IS NULL
+                                 AND NOT (gg_cc.finalgrade IS NOT NULL AND gi_cc.grademax > 0
+                                     AND gg_cc.finalgrade / gi_cc.grademax * 100 >= 100))
                                  AND ccomp.timestarted IS NOT NULL
-                                THEN ccomp.userid ELSE NULL END)             AS inprogress,
-                       COUNT(DISTINCT CASE WHEN ccomp.id IS NULL
-                                 OR  ccomp.timestarted IS NULL
+                                THEN ue.userid ELSE NULL END)                AS inprogress,
+                       COUNT(DISTINCT CASE WHEN (ccomp.id IS NULL
+                                 OR  ccomp.timestarted IS NULL)
+                                 AND NOT (gg_cc.finalgrade IS NOT NULL AND gi_cc.grademax > 0
+                                     AND gg_cc.finalgrade / gi_cc.grademax * 100 >= 100)
                                 THEN ue.userid ELSE NULL END)                AS notstarted
                   FROM {course} c
                   JOIN {course_categories} cc2   ON cc2.id  = c.category
@@ -78,6 +85,8 @@ class course_completion_report extends base_report {
                   JOIN {user_enrolments} ue       ON ue.enrolid = e.id
              LEFT JOIN {course_completions} ccomp ON ccomp.course = c.id
                                                  AND ccomp.userid = ue.userid
+             LEFT JOIN {grade_items} gi_cc        ON gi_cc.courseid = c.id AND gi_cc.itemtype = 'course'
+             LEFT JOIN {grade_grades} gg_cc       ON gg_cc.itemid = gi_cc.id AND gg_cc.userid = ue.userid
                  WHERE c.id <> :siteid
                    {$coursewhere}
                    {$cohortjoin}
@@ -87,6 +96,8 @@ class course_completion_report extends base_report {
         $params = array_merge([
             'from'   => $from,
             'to'     => $to,
+            'gfrom'  => $from,
+            'gto'    => $to,
             'siteid' => SITEID,
         ], $courseparams, $cohortparams);
 
@@ -247,16 +258,27 @@ class course_completion_report extends base_report {
 
         // Use recordset to avoid memory issues and prevent duplicate-key loss.
         $rs = $DB->get_recordset_sql(
-            "SELECT id, timecompleted FROM {course_completions}
-              WHERE timecompleted BETWEEN :start AND :now
-                AND timecompleted IS NOT NULL",
-            ['start' => $start, 'now' => $now]
+            "SELECT cc.id,
+                    CASE WHEN cc.timecompleted IS NOT NULL THEN cc.timecompleted
+                         WHEN gg_t.finalgrade IS NOT NULL AND gi_t.grademax > 0
+                              AND gg_t.finalgrade / gi_t.grademax * 100 >= 100 THEN gg_t.timemodified
+                         ELSE NULL END AS completiontime
+               FROM {course_completions} cc
+          LEFT JOIN {grade_items} gi_t ON gi_t.courseid = cc.course AND gi_t.itemtype = 'course'
+          LEFT JOIN {grade_grades} gg_t ON gg_t.itemid = gi_t.id AND gg_t.userid = cc.userid
+              WHERE (cc.timecompleted IS NOT NULL AND cc.timecompleted BETWEEN :start AND :now)
+                 OR (cc.timecompleted IS NULL AND gg_t.finalgrade IS NOT NULL AND gi_t.grademax > 0
+                     AND gg_t.finalgrade / gi_t.grademax * 100 >= 100
+                     AND gg_t.timemodified BETWEEN :gstart AND :gnow)",
+            ['start' => $start, 'now' => $now, 'gstart' => $start, 'gnow' => $now]
         );
 
         $monthly = [];
         foreach ($rs as $r) {
-            $key = date('Y-m', (int) $r->timecompleted);
-            $monthly[$key] = ($monthly[$key] ?? 0) + 1;
+            if (!empty($r->completiontime)) {
+                $key = date('Y-m', (int) $r->completiontime);
+                $monthly[$key] = ($monthly[$key] ?? 0) + 1;
+            }
         }
         $rs->close();
 

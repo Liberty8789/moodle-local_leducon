@@ -69,7 +69,9 @@ class roi_analyst_report extends base_report {
                         cc_cost.valuepercompletion,
                         cc_cost.currency,
                         COUNT(DISTINCT ue.userid) AS enrolled,
-                        COUNT(DISTINCT CASE WHEN comp.timecompleted IS NOT NULL THEN comp.userid END) AS completions
+                        COUNT(DISTINCT CASE WHEN comp.timecompleted IS NOT NULL
+                            OR (gg_r.finalgrade IS NOT NULL AND gi_r.grademax > 0 AND gg_r.finalgrade / gi_r.grademax * 100 >= 100)
+                            THEN comp.userid END) AS completions
                    FROM {course} c
                    JOIN {course_categories} cat          ON cat.id = c.category
                    JOIN {local_leducon_course_costs} cc_cost ON cc_cost.courseid = c.id
@@ -79,6 +81,8 @@ class roi_analyst_report extends base_report {
                    JOIN {user} u                         ON u.id = ue.userid
                                                          AND u.deleted = 0 AND u.suspended = 0
               LEFT JOIN {course_completions} comp        ON comp.course = c.id AND comp.userid = ue.userid
+              LEFT JOIN {grade_items} gi_r               ON gi_r.courseid = c.id AND gi_r.itemtype = 'course'
+              LEFT JOIN {grade_grades} gg_r              ON gg_r.itemid = gi_r.id AND gg_r.userid = ue.userid
                   WHERE c.id <> :siteid
                   GROUP BY c.id, c.fullname, cat.name,
                            cc_cost.costperlearner, cc_cost.valuepercompletion, cc_cost.currency

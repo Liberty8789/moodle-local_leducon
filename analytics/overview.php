@@ -67,11 +67,15 @@ $overallcomppct = null;
 try {
     $comprow = $DB->get_record_sql(
         "SELECT COUNT(DISTINCT ue.userid) AS total,
-                COUNT(DISTINCT CASE WHEN cc.timecompleted IS NOT NULL THEN cc.userid ELSE NULL END) AS completed
+                COUNT(DISTINCT CASE WHEN cc.timecompleted IS NOT NULL
+                    OR (gg_ov.finalgrade IS NOT NULL AND gi_ov.grademax > 0 AND gg_ov.finalgrade / gi_ov.grademax * 100 >= 100)
+                    THEN cc.userid ELSE NULL END) AS completed
            FROM {user_enrolments} ue
            JOIN {enrol} e ON e.id = ue.enrolid AND e.courseid <> :siteid
            JOIN {user} u ON u.id = ue.userid AND u.deleted = 0 AND u.suspended = 0
-      LEFT JOIN {course_completions} cc ON cc.course = e.courseid AND cc.userid = ue.userid",
+      LEFT JOIN {course_completions} cc ON cc.course = e.courseid AND cc.userid = ue.userid
+      LEFT JOIN {grade_items} gi_ov ON gi_ov.courseid = e.courseid AND gi_ov.itemtype = 'course'
+      LEFT JOIN {grade_grades} gg_ov ON gg_ov.itemid = gi_ov.id AND gg_ov.userid = ue.userid",
         ['siteid' => SITEID]
     );
     if ($comprow && $comprow->total > 0) {
@@ -124,12 +128,16 @@ try {
     $coursecompletionstats = $DB->get_records_sql(
         "SELECT c.id, c.fullname,
                 COUNT(DISTINCT ue.userid) AS enrolled,
-                COUNT(DISTINCT CASE WHEN cc.timecompleted IS NOT NULL THEN cc.userid ELSE NULL END) AS completed
+                COUNT(DISTINCT CASE WHEN cc.timecompleted IS NOT NULL
+                    OR (gg_cs.finalgrade IS NOT NULL AND gi_cs.grademax > 0 AND gg_cs.finalgrade / gi_cs.grademax * 100 >= 100)
+                    THEN cc.userid ELSE NULL END) AS completed
            FROM {course} c
            JOIN {enrol} e ON e.courseid = c.id
            JOIN {user_enrolments} ue ON ue.enrolid = e.id
            JOIN {user} u ON u.id = ue.userid AND u.deleted = 0 AND u.suspended = 0
       LEFT JOIN {course_completions} cc ON cc.course = c.id AND cc.userid = ue.userid
+      LEFT JOIN {grade_items} gi_cs ON gi_cs.courseid = c.id AND gi_cs.itemtype = 'course'
+      LEFT JOIN {grade_grades} gg_cs ON gg_cs.itemid = gi_cs.id AND gg_cs.userid = ue.userid
           WHERE c.id <> :siteid
        GROUP BY c.id, c.fullname
          HAVING COUNT(DISTINCT ue.userid) > 0
@@ -269,7 +277,10 @@ try {
         "SELECT COUNT(DISTINCT cc.id)
            FROM {course_completions} cc
            JOIN {user} u ON u.id = cc.userid AND u.deleted = 0 AND u.suspended = 0
-          WHERE cc.timecompleted IS NOT NULL"
+      LEFT JOIN {grade_items} gi_p ON gi_p.courseid = cc.course AND gi_p.itemtype = 'course'
+      LEFT JOIN {grade_grades} gg_p ON gg_p.itemid = gi_p.id AND gg_p.userid = cc.userid
+          WHERE cc.timecompleted IS NOT NULL
+             OR (gg_p.finalgrade IS NOT NULL AND gi_p.grademax > 0 AND gg_p.finalgrade / gi_p.grademax * 100 >= 100)"
     );
 } catch (\Exception $e) {}
 try {
@@ -277,7 +288,10 @@ try {
         "SELECT COUNT(DISTINCT cc.id)
            FROM {course_completions} cc
            JOIN {user} u ON u.id = cc.userid AND u.deleted = 0 AND u.suspended = 0
-          WHERE cc.timecompleted IS NULL AND cc.timestarted IS NOT NULL"
+      LEFT JOIN {grade_items} gi_q ON gi_q.courseid = cc.course AND gi_q.itemtype = 'course'
+      LEFT JOIN {grade_grades} gg_q ON gg_q.itemid = gi_q.id AND gg_q.userid = cc.userid
+          WHERE cc.timecompleted IS NULL AND cc.timestarted IS NOT NULL
+            AND NOT (gg_q.finalgrade IS NOT NULL AND gi_q.grademax > 0 AND gg_q.finalgrade / gi_q.grademax * 100 >= 100)"
     );
 } catch (\Exception $e) {}
 try {

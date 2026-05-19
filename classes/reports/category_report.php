@@ -59,7 +59,9 @@ class category_report extends base_report {
                        cat.name                                                   AS categoryname,
                        COUNT(DISTINCT c.id)                                        AS courses,
                        COUNT(DISTINCT ue.userid)                                   AS enrolled,
-                       COUNT(DISTINCT CASE WHEN cc.timecompleted IS NOT NULL THEN cc.userid ELSE NULL END) AS completed,
+                       COUNT(DISTINCT CASE WHEN cc.timecompleted IS NOT NULL
+                                OR (gg.finalgrade IS NOT NULL AND gi.grademax > 0 AND gg.finalgrade / gi.grademax * 100 >= 100)
+                                THEN cc.userid ELSE NULL END) AS completed,
                        AVG(CASE WHEN gg.finalgrade IS NOT NULL AND gi.grademax > 0
                                 THEN gg.finalgrade / gi.grademax * 100
                                 ELSE NULL END)                                     AS avggrade

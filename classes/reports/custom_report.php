@@ -103,7 +103,8 @@ class custom_report extends base_report {
                     'username'       => ['label' => 'Username',        'sql' => 'u.username',          'type' => 'text'],
                     'coursename'     => ['label' => 'Course',          'sql' => 'c.fullname',          'type' => 'text'],
                     'category'       => ['label' => 'Category',        'sql' => 'cc.name',             'type' => 'text'],
-                    'timecompleted'  => ['label' => 'Date Completed',  'sql' => 'comp.timecompleted',  'type' => 'date'],
+                    'timecompleted'  => ['label' => 'Date Completed',  'sql' => 'CASE WHEN comp.timecompleted IS NOT NULL THEN comp.timecompleted WHEN gg_c.finalgrade IS NOT NULL AND gi_c.grademax > 0 AND gg_c.finalgrade / gi_c.grademax * 100 >= 100 THEN gg_c.timemodified ELSE NULL END',  'type' => 'date'],
+                    'gradepct'       => ['label' => 'Grade %',         'sql' => 'CASE WHEN gi_c.grademax > 0 THEN ROUND(gg_c.finalgrade / gi_c.grademax * 100, 1) ELSE NULL END', 'type' => 'number'],
                 ];
                 break;
 
@@ -214,10 +215,14 @@ class custom_report extends base_report {
         $base = '';
         switch ($this->datasource) {
             case 'completions':
-                $base = "{course_completions} comp
-                    JOIN {user} u ON u.id = comp.userid AND u.deleted = 0
-                    JOIN {course} c ON c.id = comp.course
-                    JOIN {course_categories} cc ON cc.id = c.category";
+                $base = "{user_enrolments} ue
+                    JOIN {enrol} e_c ON e_c.id = ue.enrolid
+                    JOIN {course} c ON c.id = e_c.courseid
+                    JOIN {course_categories} cc ON cc.id = c.category
+                    JOIN {user} u ON u.id = ue.userid AND u.deleted = 0
+               LEFT JOIN {course_completions} comp ON comp.userid = u.id AND comp.course = c.id
+               LEFT JOIN {grade_items} gi_c ON gi_c.courseid = c.id AND gi_c.itemtype = 'course'
+               LEFT JOIN {grade_grades} gg_c ON gg_c.itemid = gi_c.id AND gg_c.userid = u.id";
                 break;
 
             case 'grades':
@@ -270,7 +275,7 @@ class custom_report extends base_report {
     protected function build_base_where(): array {
         switch ($this->datasource) {
             case 'completions':
-                return ["comp.timecompleted IS NOT NULL", []];
+                return ["(comp.timecompleted IS NOT NULL OR (gg_c.finalgrade IS NOT NULL AND gi_c.grademax > 0 AND gg_c.finalgrade / gi_c.grademax * 100 >= 100))", []];
             case 'grades':
                 return ["gg.finalgrade IS NOT NULL", []];
             case 'logins':

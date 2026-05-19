@@ -325,7 +325,12 @@ class org_manager {
 
             // Completions.
             $cd['completions'] = (int)$DB->count_records_sql(
-                "SELECT COUNT(*) FROM {course_completions} WHERE userid {$usql} AND timecompleted IS NOT NULL",
+                "SELECT COUNT(*) FROM {course_completions} cc
+                LEFT JOIN {grade_items} gi_om ON gi_om.courseid = cc.course AND gi_om.itemtype = 'course'
+                LEFT JOIN {grade_grades} gg_om ON gg_om.itemid = gi_om.id AND gg_om.userid = cc.userid
+                WHERE cc.userid {$usql}
+                  AND (cc.timecompleted IS NOT NULL
+                      OR (gg_om.finalgrade IS NOT NULL AND gi_om.grademax > 0 AND gg_om.finalgrade / gi_om.grademax * 100 >= 100))",
                 $uparams
             );
 

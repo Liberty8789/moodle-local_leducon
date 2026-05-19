@@ -1091,8 +1091,12 @@ function local_leducon_ajax_section(string $section, int $userid): array {
                 );
             } catch (\dml_exception $e) { $kpi['active_users'] = 0; }
             try {
-                $kpi['completions'] = (int)$DB->count_records_select(
-                    'course_completions', 'timecompleted IS NOT NULL', []);
+                $kpi['completions'] = (int)$DB->count_records_sql(
+                    "SELECT COUNT(*) FROM {course_completions} cc
+                    LEFT JOIN {grade_items} gi_l ON gi_l.courseid = cc.course AND gi_l.itemtype = 'course'
+                    LEFT JOIN {grade_grades} gg_l ON gg_l.itemid = gi_l.id AND gg_l.userid = cc.userid
+                    WHERE cc.timecompleted IS NOT NULL
+                       OR (gg_l.finalgrade IS NOT NULL AND gi_l.grademax > 0 AND gg_l.finalgrade / gi_l.grademax * 100 >= 100)");
             } catch (\dml_exception $e) { $kpi['completions'] = 0; }
             return $kpi;
 

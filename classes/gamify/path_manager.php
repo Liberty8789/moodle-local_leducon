@@ -65,9 +65,13 @@ class path_manager {
         [$in_sql, $params] = $DB->get_in_or_equal($course_ids, SQL_PARAMS_NAMED);
         $params['uid'] = $userid;
 
-        $completed = $DB->count_records_select(
-            'course_completions',
-            "userid = :uid AND course {$in_sql} AND timecompleted IS NOT NULL",
+        $completed = (int)$DB->count_records_sql(
+            "SELECT COUNT(*) FROM {course_completions} cc
+            LEFT JOIN {grade_items} gi_p ON gi_p.courseid = cc.course AND gi_p.itemtype = 'course'
+            LEFT JOIN {grade_grades} gg_p ON gg_p.itemid = gi_p.id AND gg_p.userid = cc.userid
+            WHERE cc.userid = :uid AND cc.course {$in_sql}
+              AND (cc.timecompleted IS NOT NULL
+                  OR (gg_p.finalgrade IS NOT NULL AND gi_p.grademax > 0 AND gg_p.finalgrade / gi_p.grademax * 100 >= 100))",
             $params
         );
 

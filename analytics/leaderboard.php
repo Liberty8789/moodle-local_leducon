@@ -258,7 +258,8 @@ if ($type === 'course') {
       LEFT JOIN {grade_items} gi  ON gi.courseid = c.id AND gi.itemtype = 'course'
       LEFT JOIN {grade_grades} gg ON gg.itemid = gi.id AND gg.userid = u.id AND gg.finalgrade IS NOT NULL
       LEFT JOIN {course_completions} comp ON comp.course = c.id AND comp.userid = u.id
-                                         AND comp.timecompleted IS NOT NULL
+                                         AND (comp.timecompleted IS NOT NULL
+                                             OR (gg.finalgrade IS NOT NULL AND gi.grademax > 0 AND gg.finalgrade / gi.grademax * 100 >= 100))
       LEFT JOIN {logstore_standard_log} ls ON ls.userid = u.id AND ls.action = 'loggedin'
           WHERE cm.cohortid = :cohortid
             AND u.id <> :guestid

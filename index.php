@@ -74,9 +74,21 @@ if ($cananalytics) {
     } catch (\dml_exception $e) {}
 
     try {
-        $cw = $period > 0 ? 'timecompleted >= :pfrom' : 'timecompleted IS NOT NULL';
+        $csql = "SELECT COUNT(*) FROM {course_completions} cc
+            LEFT JOIN {grade_items} gi_k ON gi_k.courseid = cc.course AND gi_k.itemtype = 'course'
+            LEFT JOIN {grade_grades} gg_k ON gg_k.itemid = gi_k.id AND gg_k.userid = cc.userid
+            WHERE cc.timecompleted IS NOT NULL
+               OR (gg_k.finalgrade IS NOT NULL AND gi_k.grademax > 0 AND gg_k.finalgrade / gi_k.grademax * 100 >= 100)";
+        if ($period > 0) {
+            $csql = "SELECT COUNT(*) FROM {course_completions} cc
+                LEFT JOIN {grade_items} gi_k ON gi_k.courseid = cc.course AND gi_k.itemtype = 'course'
+                LEFT JOIN {grade_grades} gg_k ON gg_k.itemid = gi_k.id AND gg_k.userid = cc.userid
+                WHERE (cc.timecompleted >= :pfrom)
+                   OR (cc.timecompleted IS NULL AND gg_k.finalgrade IS NOT NULL AND gi_k.grademax > 0
+                       AND gg_k.finalgrade / gi_k.grademax * 100 >= 100)";
+        }
         $cp = $period > 0 ? ['pfrom' => $pfrom] : [];
-        $kpi['completions'] = (int)$DB->count_records_select('course_completions', $cw, $cp);
+        $kpi['completions'] = (int)$DB->count_records_sql($csql, $cp);
     } catch (\dml_exception $e) {}
 
     try {
@@ -87,7 +99,13 @@ if ($cananalytics) {
 
     try {
         $total = (int)$DB->count_records('user_enrolments');
-        $done  = (int)$DB->count_records_select('course_completions', 'timecompleted IS NOT NULL', []);
+        $done  = (int)$DB->count_records_sql(
+            "SELECT COUNT(*) FROM {course_completions} cc
+            LEFT JOIN {grade_items} gi_r ON gi_r.courseid = cc.course AND gi_r.itemtype = 'course'
+            LEFT JOIN {grade_grades} gg_r ON gg_r.itemid = gi_r.id AND gg_r.userid = cc.userid
+            WHERE cc.timecompleted IS NOT NULL
+               OR (gg_r.finalgrade IS NOT NULL AND gi_r.grademax > 0 AND gg_r.finalgrade / gi_r.grademax * 100 >= 100)"
+        );
         $kpi['completion_rate'] = $total > 0 ? round($done / $total * 100, 1) : 0.0;
     } catch (\dml_exception $e) {}
 
@@ -126,9 +144,13 @@ $campaigns = [];
 if ($gamify_enabled) {
     $progress = level_manager::get_progress($userid);
     $streak   = local_leducon_get_streak($userid);
-    $total_completions  = $DB->count_records_select(
-        'course_completions',
-        'userid = :uid AND timecompleted IS NOT NULL',
+    $total_completions  = (int)$DB->count_records_sql(
+        "SELECT COUNT(*) FROM {course_completions} cc
+        LEFT JOIN {grade_items} gi_g ON gi_g.courseid = cc.course AND gi_g.itemtype = 'course'
+        LEFT JOIN {grade_grades} gg_g ON gg_g.itemid = gi_g.id AND gg_g.userid = cc.userid
+        WHERE cc.userid = :uid
+          AND (cc.timecompleted IS NOT NULL
+              OR (gg_g.finalgrade IS NOT NULL AND gi_g.grademax > 0 AND gg_g.finalgrade / gi_g.grademax * 100 >= 100))",
         ['uid' => $userid]
     );
     $total_achievements = $DB->count_records('local_leducon_user_achiev', ['userid' => $userid]);
@@ -219,7 +241,10 @@ if ($cananalytics) {
             "SELECT COUNT(DISTINCT cc.id)
                FROM {course_completions} cc
                JOIN {user} u ON u.id = cc.userid AND u.deleted = 0 AND u.suspended = 0
-              WHERE cc.timecompleted IS NOT NULL"
+          LEFT JOIN {grade_items} gi_c ON gi_c.courseid = cc.course AND gi_c.itemtype = 'course'
+          LEFT JOIN {grade_grades} gg_c ON gg_c.itemid = gi_c.id AND gg_c.userid = cc.userid
+              WHERE cc.timecompleted IS NOT NULL
+                 OR (gg_c.finalgrade IS NOT NULL AND gi_c.grademax > 0 AND gg_c.finalgrade / gi_c.grademax * 100 >= 100)"
         );
     } catch (\Exception $e) {}
     try {
@@ -227,7 +252,10 @@ if ($cananalytics) {
             "SELECT COUNT(DISTINCT cc.id)
                FROM {course_completions} cc
                JOIN {user} u ON u.id = cc.userid AND u.deleted = 0 AND u.suspended = 0
-              WHERE cc.timecompleted IS NULL AND cc.timestarted IS NOT NULL"
+          LEFT JOIN {grade_items} gi_d ON gi_d.courseid = cc.course AND gi_d.itemtype = 'course'
+          LEFT JOIN {grade_grades} gg_d ON gg_d.itemid = gi_d.id AND gg_d.userid = cc.userid
+              WHERE cc.timecompleted IS NULL AND cc.timestarted IS NOT NULL
+                AND NOT (gg_d.finalgrade IS NOT NULL AND gi_d.grademax > 0 AND gg_d.finalgrade / gi_d.grademax * 100 >= 100)"
         );
     } catch (\Exception $e) {}
     try {

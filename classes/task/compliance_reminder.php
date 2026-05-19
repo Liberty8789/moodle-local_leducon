@@ -54,11 +54,13 @@ class compliance_reminder extends \core\task\scheduled_task {
                   JOIN {user} u ON u.id = ue.userid AND u.deleted = 0 AND u.suspended = 0
                   JOIN {course} c ON c.id = e.courseid
              LEFT JOIN {course_completions} cc ON cc.userid = u.id AND cc.course = c.id
-                                              AND cc.timecompleted IS NOT NULL
+             LEFT JOIN {grade_items} gi_cr ON gi_cr.courseid = c.id AND gi_cr.itemtype = 'course'
+             LEFT JOIN {grade_grades} gg_cr ON gg_cr.itemid = gi_cr.id AND gg_cr.userid = u.id
                  WHERE ue.status = 0
                    AND c.enddate > :now
                    AND c.enddate <= :windowend
-                   AND cc.id IS NULL
+                   AND (cc.id IS NULL OR cc.timecompleted IS NULL)
+                   AND NOT (gg_cr.finalgrade IS NOT NULL AND gi_cr.grademax > 0 AND gg_cr.finalgrade / gi_cr.grademax * 100 >= 100)
                  ORDER BY c.enddate ASC, u.lastname ASC";
 
         $params = ['now' => $now, 'windowend' => $windowend];

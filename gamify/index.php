@@ -71,9 +71,13 @@ $paths = array_filter(path_manager::get_paths_for_user($userid), function($p) { 
 $paths = array_slice($paths, 0, 3);
 
 // Stat grid.
-$total_completions  = $DB->count_records_select(
-    'course_completions',
-    'userid = :uid AND timecompleted IS NOT NULL',
+$total_completions  = (int)$DB->count_records_sql(
+    "SELECT COUNT(*) FROM {course_completions} cc
+    LEFT JOIN {grade_items} gi_gi ON gi_gi.courseid = cc.course AND gi_gi.itemtype = 'course'
+    LEFT JOIN {grade_grades} gg_gi ON gg_gi.itemid = gi_gi.id AND gg_gi.userid = cc.userid
+    WHERE cc.userid = :uid
+      AND (cc.timecompleted IS NOT NULL
+          OR (gg_gi.finalgrade IS NOT NULL AND gi_gi.grademax > 0 AND gg_gi.finalgrade / gi_gi.grademax * 100 >= 100))",
     ['uid' => $userid]
 );
 $total_achievements = $DB->count_records('local_leducon_user_achiev', ['userid' => $userid]);

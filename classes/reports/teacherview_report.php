@@ -98,7 +98,9 @@ class teacherview_report extends base_report {
                 ? number_format(($s->finalgrade / $s->grademax) * 100, 1) . '%'
                 : '-';
 
-            $completed = !empty($s->timecompleted);
+            $gradepct = (!empty($s->grademax) && $s->finalgrade !== null)
+                ? ($s->finalgrade / $s->grademax) * 100 : 0;
+            $completed = !empty($s->timecompleted) || $gradepct >= 100;
             $statushtml = $completed
                 ? \html_writer::tag('span', s(get_string('tv_completed', 'local_leducon')), ['class' => 'ld-badge ld-badge-success'])
                 : \html_writer::tag('span', s(get_string('tv_notstarted', 'local_leducon')), ['class' => 'ld-badge ld-badge-secondary']);

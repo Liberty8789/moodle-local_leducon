@@ -59,7 +59,8 @@ class instructor_report extends base_report {
                        u.lastaccess,
                        COUNT(DISTINCT c.id)                                           AS courses,
                        COUNT(DISTINCT us.id)                                           AS students,
-                       COUNT(DISTINCT CASE WHEN cc.timecompleted IS NOT NULL
+                       COUNT(DISTINCT CASE WHEN (cc.timecompleted IS NOT NULL
+                                 OR (gg.finalgrade IS NOT NULL AND gi.grademax > 0 AND gg.finalgrade / gi.grademax * 100 >= 100))
                                  AND us.id IS NOT NULL THEN cc.userid ELSE NULL END)   AS completions,
                        AVG(CASE WHEN gg.finalgrade IS NOT NULL AND gi.grademax > 0
                                  AND us.id IS NOT NULL

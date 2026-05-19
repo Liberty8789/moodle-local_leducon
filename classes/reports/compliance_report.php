@@ -68,13 +68,17 @@ class compliance_report extends base_report {
                        c.fullname     AS coursename,
                        cat.name       AS category,
                        ue.timecreated AS timeenrolled,
-                       cc.timecompleted
+                       cc.timecompleted,
+                       gi.grademax,
+                       gg.finalgrade
                   FROM {user} u
                   JOIN {user_enrolments} ue ON ue.userid = u.id
                   JOIN {enrol} e            ON e.id = ue.enrolid
                   JOIN {course} c           ON c.id = e.courseid {$coursewhere}
                   JOIN {course_categories} cat ON cat.id = c.category
              LEFT JOIN {course_completions} cc ON cc.course = c.id AND cc.userid = u.id
+             LEFT JOIN {grade_items} gi ON gi.courseid = c.id AND gi.itemtype = 'course'
+             LEFT JOIN {grade_grades} gg ON gg.itemid = gi.id AND gg.userid = u.id
                  WHERE u.deleted = 0 {$activesql}
                    {$cohortjoin}
               ORDER BY u.lastname ASC, u.firstname ASC, c.fullname ASC";
@@ -83,7 +87,9 @@ class compliance_report extends base_report {
 
         $rows = [];
         foreach ($DB->get_records_sql($sql, $params) as $r) {
-            $completed = !empty($r->timecompleted);
+            $gradepct = (!empty($r->grademax) && $r->finalgrade !== null)
+                ? ($r->finalgrade / $r->grademax) * 100 : 0;
+            $completed = !empty($r->timecompleted) || $gradepct >= 100;
             $daysenr   = $r->timeenrolled > 0 ? (int) round(($now - $r->timeenrolled) / DAYSECS) : '-';
 
             $rows[] = [

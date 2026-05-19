@@ -37,14 +37,20 @@ $paths  = path_manager::get_paths_for_user($userid);
 foreach ($paths as $path) {
     $path->courses = $DB->get_records_sql(
         "SELECT co.id, co.fullname, co.shortname,
-                (SELECT MAX(cc2.timecompleted) FROM {course_completions} cc2
-                  WHERE cc2.userid = :uid AND cc2.course = co.id AND cc2.timecompleted IS NOT NULL
+                COALESCE(
+                    (SELECT MAX(cc2.timecompleted) FROM {course_completions} cc2
+                      WHERE cc2.userid = :uid AND cc2.course = co.id AND cc2.timecompleted IS NOT NULL),
+                    (SELECT MAX(gg_pp.timemodified) FROM {grade_items} gi_pp
+                      JOIN {grade_grades} gg_pp ON gg_pp.itemid = gi_pp.id
+                      WHERE gi_pp.courseid = co.id AND gi_pp.itemtype = 'course'
+                        AND gg_pp.userid = :uid2 AND gi_pp.grademax > 0
+                        AND gg_pp.finalgrade / gi_pp.grademax * 100 >= 100)
                 ) AS timecompleted
            FROM {course} co
            JOIN {local_leducon_path_courses} pc ON pc.courseid = co.id
           WHERE pc.pathid = :pid
        ORDER BY pc.sortorder ASC",
-        ['uid' => $userid, 'pid' => $path->id]
+        ['uid' => $userid, 'uid2' => $userid, 'pid' => $path->id]
     );
 }
 

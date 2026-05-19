@@ -90,7 +90,9 @@ try {
                 cc_cost.currency,
                 cc_cost.notes,
                 COUNT(DISTINCT ue.userid)                                                      AS enrolled,
-                COUNT(DISTINCT CASE WHEN comp.timecompleted IS NOT NULL THEN comp.userid END) AS completions
+                COUNT(DISTINCT CASE WHEN comp.timecompleted IS NOT NULL
+                    OR (gg_roi.finalgrade IS NOT NULL AND gi_roi.grademax > 0 AND gg_roi.finalgrade / gi_roi.grademax * 100 >= 100)
+                    THEN comp.userid END) AS completions
            FROM {course} c
            JOIN {course_categories} cat          ON cat.id = c.category
            JOIN {local_leducon_course_costs} cc_cost ON cc_cost.courseid = c.id
@@ -101,6 +103,8 @@ try {
            JOIN {user} u                         ON u.id = ue.userid
                                                  AND u.deleted = 0 AND u.suspended = 0
       LEFT JOIN {course_completions} comp        ON comp.course = c.id AND comp.userid = ue.userid
+      LEFT JOIN {grade_items} gi_roi             ON gi_roi.courseid = c.id AND gi_roi.itemtype = 'course'
+      LEFT JOIN {grade_grades} gg_roi            ON gg_roi.itemid = gi_roi.id AND gg_roi.userid = ue.userid
           WHERE c.id <> :siteid
           GROUP BY c.id, c.fullname, cat.name,
                    cc_cost.costperlearner, cc_cost.valuepercompletion,

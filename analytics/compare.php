@@ -70,7 +70,7 @@ $PAGE->navbar->add(get_string('compare_title', 'local_leducon'));
 function local_leducon_count_between(string $sql, int $from, int $to): int {
     global $DB;
     try {
-        return (int)$DB->count_records_sql($sql, ['from' => $from, 'to' => $to]);
+        return (int)$DB->count_records_sql($sql, ['from' => $from, 'to' => $to, 'gfrom' => $from, 'gto' => $to]);
     } catch (\dml_exception $e) {
         return 0;
     }
@@ -92,8 +92,13 @@ $metrics = [
     ],
     'completions' => [
         'label' => get_string('compare_metric_completions', 'local_leducon'),
-        'sql'   => "SELECT COUNT(*) FROM {course_completions}
-                     WHERE timecompleted BETWEEN :from AND :to",
+        'sql'   => "SELECT COUNT(*) FROM {course_completions} cc
+               LEFT JOIN {grade_items} gi_cm ON gi_cm.courseid = cc.course AND gi_cm.itemtype = 'course'
+               LEFT JOIN {grade_grades} gg_cm ON gg_cm.itemid = gi_cm.id AND gg_cm.userid = cc.userid
+                     WHERE (cc.timecompleted BETWEEN :from AND :to)
+                        OR (cc.timecompleted IS NULL AND gg_cm.finalgrade IS NOT NULL AND gi_cm.grademax > 0
+                            AND gg_cm.finalgrade / gi_cm.grademax * 100 >= 100
+                            AND gg_cm.timemodified BETWEEN :gfrom AND :gto)",
     ],
     'quiz_attempts' => [
         'label' => get_string('compare_metric_quiz_attempts', 'local_leducon'),
@@ -140,11 +145,15 @@ try {
     $coursecomparison = $DB->get_records_sql(
         "SELECT c.id, c.fullname,
                 COUNT(DISTINCT ue.userid) AS enrolled,
-                COUNT(DISTINCT CASE WHEN cc.timecompleted IS NOT NULL THEN cc.userid ELSE NULL END) AS completed
+                COUNT(DISTINCT CASE WHEN cc.timecompleted IS NOT NULL
+                    OR (gg_cp.finalgrade IS NOT NULL AND gi_cp.grademax > 0 AND gg_cp.finalgrade / gi_cp.grademax * 100 >= 100)
+                    THEN cc.userid ELSE NULL END) AS completed
            FROM {course} c
            JOIN {enrol} e ON e.courseid = c.id
            JOIN {user_enrolments} ue ON ue.enrolid = e.id
       LEFT JOIN {course_completions} cc ON cc.course = c.id AND cc.userid = ue.userid
+      LEFT JOIN {grade_items} gi_cp ON gi_cp.courseid = c.id AND gi_cp.itemtype = 'course'
+      LEFT JOIN {grade_grades} gg_cp ON gg_cp.itemid = gi_cp.id AND gg_cp.userid = ue.userid
           WHERE c.id <> :siteid
           GROUP BY c.id, c.fullname
           ORDER BY c.fullname ASC",

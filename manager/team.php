@@ -186,7 +186,11 @@ if ($tab === 'gamify') {
                         THEN gg.finalgrade / gi.grademax * 100 ELSE NULL END) AS avggrade
               FROM {cohort_members} cm
               JOIN {user} u ON u.id = cm.userid
-         LEFT JOIN {course_completions} cc ON cc.userid = u.id AND cc.timecompleted IS NOT NULL
+         LEFT JOIN {course_completions} cc ON cc.userid = u.id
+                   AND (cc.timecompleted IS NOT NULL
+                       OR EXISTS (SELECT 1 FROM {grade_items} gi_t JOIN {grade_grades} gg_t ON gg_t.itemid = gi_t.id
+                                  WHERE gi_t.courseid = cc.course AND gi_t.itemtype = 'course'
+                                    AND gg_t.userid = u.id AND gi_t.grademax > 0 AND gg_t.finalgrade / gi_t.grademax * 100 >= 100))
          LEFT JOIN {grade_grades} gg ON gg.userid = u.id AND gg.finalgrade IS NOT NULL
          LEFT JOIN {grade_items} gi  ON gi.id = gg.itemid AND gi.itemtype = 'course' AND gi.grademax > 0
              WHERE cm.cohortid = :cid AND u.deleted = 0 AND u.suspended = 0

@@ -60,12 +60,15 @@ class skills_report extends base_report {
             $skillrows = $DB->get_records_sql(
                 "SELECT s.id, s.name, s.description,
                         COUNT(DISTINCT cs.courseid)  AS course_count,
-                        COUNT(DISTINCT cc.userid)    AS learner_count
+                        COUNT(DISTINCT CASE WHEN cc.timecompleted IS NOT NULL
+                            OR (gg_s.finalgrade IS NOT NULL AND gi_s.grademax > 0 AND gg_s.finalgrade / gi_s.grademax * 100 >= 100)
+                            THEN cc.userid ELSE NULL END) AS learner_count
                    FROM {local_leducon_skills} s
                    JOIN {local_leducon_course_skills} cs ON cs.skillid = s.id
               LEFT JOIN {course_completions} cc ON cc.course = cs.courseid
-                                               AND cc.timecompleted IS NOT NULL
                                                {$cohortjoin}
+              LEFT JOIN {grade_items} gi_s ON gi_s.courseid = cs.courseid AND gi_s.itemtype = 'course'
+              LEFT JOIN {grade_grades} gg_s ON gg_s.itemid = gi_s.id AND gg_s.userid = cc.userid
                   GROUP BY s.id, s.name, s.description
                   ORDER BY learner_count DESC, s.name ASC",
                 $cohortparams
@@ -185,10 +188,13 @@ class skills_report extends base_report {
         global $DB;
         try {
             $totallearners = (int) $DB->count_records_sql(
-                "SELECT COUNT(DISTINCT cc.userid)
+                "SELECT COUNT(DISTINCT CASE WHEN cc.timecompleted IS NOT NULL
+                    OR (gg_i.finalgrade IS NOT NULL AND gi_i.grademax > 0 AND gg_i.finalgrade / gi_i.grademax * 100 >= 100)
+                    THEN cc.userid ELSE NULL END)
                    FROM {course_completions} cc
                    JOIN {local_leducon_course_skills} cs ON cs.courseid = cc.course
-                  WHERE cc.timecompleted IS NOT NULL"
+              LEFT JOIN {grade_items} gi_i ON gi_i.courseid = cc.course AND gi_i.itemtype = 'course'
+              LEFT JOIN {grade_grades} gg_i ON gg_i.itemid = gi_i.id AND gg_i.userid = cc.userid"
             );
         } catch (\dml_exception $e) {
             $totallearners = 0;

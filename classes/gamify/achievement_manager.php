@@ -55,9 +55,13 @@ class achievement_manager {
                 return $xp >= $rule_value;
 
             case 'completions':
-                $count = $DB->count_records_select(
-                    'course_completions',
-                    'userid = :uid AND timecompleted IS NOT NULL',
+                $count = (int)$DB->count_records_sql(
+                    "SELECT COUNT(*) FROM {course_completions} cc
+                    LEFT JOIN {grade_items} gi_a ON gi_a.courseid = cc.course AND gi_a.itemtype = 'course'
+                    LEFT JOIN {grade_grades} gg_a ON gg_a.itemid = gi_a.id AND gg_a.userid = cc.userid
+                    WHERE cc.userid = :uid
+                      AND (cc.timecompleted IS NOT NULL
+                          OR (gg_a.finalgrade IS NOT NULL AND gi_a.grademax > 0 AND gg_a.finalgrade / gi_a.grademax * 100 >= 100))",
                     ['uid' => $userid]
                 );
                 return $count >= $rule_value;

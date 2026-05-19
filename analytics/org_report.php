@@ -109,7 +109,11 @@ list($usql, $uparams) = $DB->get_in_or_equal($memberids, SQL_PARAMS_NAMED, 'u');
 $completions = (int)$DB->count_records_sql(
     "SELECT COUNT(*)
        FROM {course_completions} cc
-      WHERE cc.userid {$usql} AND cc.timecompleted IS NOT NULL",
+  LEFT JOIN {grade_items} gi_or ON gi_or.courseid = cc.course AND gi_or.itemtype = 'course'
+  LEFT JOIN {grade_grades} gg_or ON gg_or.itemid = gi_or.id AND gg_or.userid = cc.userid
+      WHERE cc.userid {$usql}
+        AND (cc.timecompleted IS NOT NULL
+            OR (gg_or.finalgrade IS NOT NULL AND gi_or.grademax > 0 AND gg_or.finalgrade / gi_or.grademax * 100 >= 100))",
     $uparams
 );
 

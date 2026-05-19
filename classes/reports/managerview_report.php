@@ -63,7 +63,9 @@ class managerview_report extends base_report {
         $members = $DB->get_records_sql(
             "SELECT u.id, u.firstname, u.lastname, u.email, u.lastaccess,
                     COUNT(DISTINCT e.courseid) AS courses_enrolled,
-                    COUNT(DISTINCT CASE WHEN cc.timecompleted IS NOT NULL THEN cc.course ELSE NULL END) AS courses_completed,
+                    COUNT(DISTINCT CASE WHEN cc.timecompleted IS NOT NULL
+                             OR (gg.finalgrade IS NOT NULL AND gi.grademax > 0 AND gg.finalgrade / gi.grademax * 100 >= 100)
+                             THEN cc.course ELSE NULL END) AS courses_completed,
                     AVG(CASE WHEN gg.finalgrade IS NOT NULL AND gi.grademax > 0
                              THEN gg.finalgrade / gi.grademax * 100 ELSE NULL END) AS avggrade
                FROM {user} u

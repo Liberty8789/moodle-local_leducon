@@ -1098,13 +1098,8 @@ function local_leducon_ajax_section(string $section, int $userid): array {
                 );
             } catch (\dml_exception $e) { $kpi['active_users'] = 0; }
             try {
-                $kpi['completions'] = (int)$DB->count_records_sql(
-                    "SELECT COUNT(*) FROM {course_completions} cc
-                    LEFT JOIN {grade_items} gi_l ON gi_l.courseid = cc.course AND gi_l.itemtype = 'course'
-                    LEFT JOIN {grade_grades} gg_l ON gg_l.itemid = gi_l.id AND gg_l.userid = cc.userid
-                    WHERE cc.timecompleted IS NOT NULL
-                       OR (gg_l.finalgrade IS NOT NULL AND gi_l.grademax > 0 AND gg_l.finalgrade / gi_l.grademax * 100 >= 100)");
-            } catch (\dml_exception $e) { $kpi['completions'] = 0; }
+                $kpi['completions'] = local_leducon_count_completions();
+            } catch (\Throwable $e) { $kpi['completions'] = 0; }
             return $kpi;
 
         default:
@@ -1127,6 +1122,44 @@ function local_leducon_ajax_section(string $section, int $userid): array {
  * @param string|null $contexturlname Optional label for the URL
  * @return bool Whether the message was sent successfully
  */
+
+// =========================================================================
+// COMPLETION DATA API (convenience wrappers)
+// =========================================================================
+
+/**
+ * Get completion status for a user in a course.
+ * Uses Moodle's completion API when tracking is ON, multi-signal detection when OFF.
+ *
+ * @param int $userid
+ * @param int $courseid
+ * @return object {completed: bool, progress: float|null, timecompleted: int|null, source: string}
+ */
+function local_leducon_get_completion(int $userid, int $courseid): object {
+    return \local_leducon\completion_data::get_user_completion($userid, $courseid);
+}
+
+/**
+ * Get completion stats for a course.
+ *
+ * @param int $courseid
+ * @return object {enrolled, completed, inprogress, notstarted, completion_rate}
+ */
+function local_leducon_get_course_stats(int $courseid): object {
+    return \local_leducon\completion_data::get_course_stats($courseid);
+}
+
+/**
+ * Count total completions, optionally filtered by date range.
+ *
+ * @param int $fromtime 0 = all time
+ * @param int $totime   0 = now
+ * @return int
+ */
+function local_leducon_count_completions(int $fromtime = 0, int $totime = 0): int {
+    return \local_leducon\completion_data::count_completions($fromtime, $totime);
+}
+
 function local_leducon_send_notification($userto, string $subject, string $body,
         string $messagetype = 'general', ?string $contexturl = null, ?string $contexturlname = null): bool {
     global $DB;

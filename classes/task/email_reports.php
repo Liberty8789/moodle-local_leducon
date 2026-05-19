@@ -127,16 +127,7 @@ class email_reports extends \core\task\scheduled_task {
         );
         $lines[] = get_string('kpi_new_enrolments', 'local_leducon') . ': ' . $newenrolments;
 
-        $completions = (int)$DB->count_records_sql(
-            "SELECT COUNT(*) FROM {course_completions} cc
-             LEFT JOIN {grade_items} gi_er ON gi_er.courseid = cc.course AND gi_er.itemtype = 'course'
-             LEFT JOIN {grade_grades} gg_er ON gg_er.itemid = gi_er.id AND gg_er.userid = cc.userid
-              WHERE (cc.timecompleted >= :from AND cc.timecompleted <= :to)
-                 OR (cc.timecompleted IS NULL AND gg_er.finalgrade IS NOT NULL AND gi_er.grademax > 0
-                     AND gg_er.finalgrade / gi_er.grademax * 100 >= 100
-                     AND gg_er.timemodified >= :gfrom AND gg_er.timemodified <= :gto)",
-            ['from' => $fromtime, 'to' => $totime, 'gfrom' => $fromtime, 'gto' => $totime]
-        );
+        $completions = \local_leducon\completion_data::count_completions($fromtime, $totime);
         $lines[] = get_string('kpi_completion', 'local_leducon') . ' (completions): ' . $completions;
 
         $lines[] = '';

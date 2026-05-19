@@ -49,23 +49,9 @@ class precompute_reports extends \core\task\scheduled_task {
 
         $totalenrolments = (int) $DB->count_records('user_enrolments');
 
-        $totalcompletions = (int) $DB->count_records_sql(
-            "SELECT COUNT(*) FROM {course_completions} cc
-            LEFT JOIN {grade_items} gi_pc ON gi_pc.courseid = cc.course AND gi_pc.itemtype = 'course'
-            LEFT JOIN {grade_grades} gg_pc ON gg_pc.itemid = gi_pc.id AND gg_pc.userid = cc.userid
-            WHERE cc.timecompleted IS NOT NULL
-               OR (gg_pc.finalgrade IS NOT NULL AND gi_pc.grademax > 0 AND gg_pc.finalgrade / gi_pc.grademax * 100 >= 100)"
-        );
+        $totalcompletions = \local_leducon\completion_data::count_completions();
 
-        $recentcompletions = (int) $DB->count_records_sql(
-            "SELECT COUNT(*) FROM {course_completions} cc
-            LEFT JOIN {grade_items} gi_rc ON gi_rc.courseid = cc.course AND gi_rc.itemtype = 'course'
-            LEFT JOIN {grade_grades} gg_rc ON gg_rc.itemid = gi_rc.id AND gg_rc.userid = cc.userid
-            WHERE (cc.timecompleted > :cutoff AND cc.timecompleted IS NOT NULL)
-               OR (cc.timecompleted IS NULL AND gg_rc.finalgrade IS NOT NULL AND gi_rc.grademax > 0
-                   AND gg_rc.finalgrade / gi_rc.grademax * 100 >= 100)",
-            ['cutoff' => $thirtyago]
-        );
+        $recentcompletions = \local_leducon\completion_data::count_completions($thirtyago);
 
         $totalcourses = (int) $DB->count_records_select('course', 'id <> :siteid', ['siteid' => SITEID]);
 

@@ -171,6 +171,13 @@ class completion_helper {
     }
 
     /**
+     * Public alias for is_scorm_complete (used by completion_data for progress).
+     */
+    public static function is_scorm_complete_public(int $userid, int $scormid): bool {
+        return self::is_scorm_complete($userid, $scormid);
+    }
+
+    /**
      * Check if a single SCORM is completed/passed for a user.
      */
     protected static function is_scorm_complete(int $userid, int $scormid): bool {

@@ -74,22 +74,8 @@ if ($cananalytics) {
     } catch (\dml_exception $e) {}
 
     try {
-        $csql = "SELECT COUNT(*) FROM {course_completions} cc
-            LEFT JOIN {grade_items} gi_k ON gi_k.courseid = cc.course AND gi_k.itemtype = 'course'
-            LEFT JOIN {grade_grades} gg_k ON gg_k.itemid = gi_k.id AND gg_k.userid = cc.userid
-            WHERE cc.timecompleted IS NOT NULL
-               OR (gg_k.finalgrade IS NOT NULL AND gi_k.grademax > 0 AND gg_k.finalgrade / gi_k.grademax * 100 >= 100)";
-        if ($period > 0) {
-            $csql = "SELECT COUNT(*) FROM {course_completions} cc
-                LEFT JOIN {grade_items} gi_k ON gi_k.courseid = cc.course AND gi_k.itemtype = 'course'
-                LEFT JOIN {grade_grades} gg_k ON gg_k.itemid = gi_k.id AND gg_k.userid = cc.userid
-                WHERE (cc.timecompleted >= :pfrom)
-                   OR (cc.timecompleted IS NULL AND gg_k.finalgrade IS NOT NULL AND gi_k.grademax > 0
-                       AND gg_k.finalgrade / gi_k.grademax * 100 >= 100)";
-        }
-        $cp = $period > 0 ? ['pfrom' => $pfrom] : [];
-        $kpi['completions'] = (int)$DB->count_records_sql($csql, $cp);
-    } catch (\dml_exception $e) {}
+        $kpi['completions'] = local_leducon_count_completions($period > 0 ? $pfrom : 0);
+    } catch (\Throwable $e) {}
 
     try {
         $ew = $period > 0 ? 'timecreated >= :pfrom' : '1=1';
@@ -98,16 +84,8 @@ if ($cananalytics) {
     } catch (\dml_exception $e) {}
 
     try {
-        $total = (int)$DB->count_records('user_enrolments');
-        $done  = (int)$DB->count_records_sql(
-            "SELECT COUNT(*) FROM {course_completions} cc
-            LEFT JOIN {grade_items} gi_r ON gi_r.courseid = cc.course AND gi_r.itemtype = 'course'
-            LEFT JOIN {grade_grades} gg_r ON gg_r.itemid = gi_r.id AND gg_r.userid = cc.userid
-            WHERE cc.timecompleted IS NOT NULL
-               OR (gg_r.finalgrade IS NOT NULL AND gi_r.grademax > 0 AND gg_r.finalgrade / gi_r.grademax * 100 >= 100)"
-        );
-        $kpi['completion_rate'] = $total > 0 ? round($done / $total * 100, 1) : 0.0;
-    } catch (\dml_exception $e) {}
+        $kpi['completion_rate'] = \local_leducon\completion_data::get_overall_completion_rate();
+    } catch (\Throwable $e) {}
 
     try {
         $kpi['avg_grade'] = round((float)$DB->get_field_sql(

@@ -150,12 +150,12 @@ $tasks = [
         'disabled'   => 0,
     ],
 
-    // Completion sync: write missing course_completions for 100% grade users every 2 hours.
+    // Completion sync: safety net — catch any missed completions every cron run.
     [
         'classname'  => '\local_leducon\task\completion_sync',
         'blocking'   => 0,
-        'minute'     => '30',
-        'hour'       => '*/2',
+        'minute'     => '*',
+        'hour'       => '*',
         'day'        => '*',
         'dayofweek'  => '*',
         'month'      => '*',

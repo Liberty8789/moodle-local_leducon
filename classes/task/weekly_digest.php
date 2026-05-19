@@ -73,7 +73,7 @@ class weekly_digest extends \core\task\scheduled_task {
                 'teamurl'   => $pluginurl->out(false),
                 'sitename'  => format_string($site->fullname),
             ]);
-            email_to_user($mgr, $noreply, $subject, $body);
+            local_leducon_send_email($mgr, $subject, $body, 'insight_alert');
         }
     }
 }

@@ -159,5 +159,32 @@ function xmldb_local_leducon_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026051700, 'local', 'leducon');
     }
 
+    // 2026051900: Create notification log table.
+    if ($oldversion < 2026051900) {
+        $dbman = $DB->get_manager();
+
+        $table = new xmldb_table('local_leducon_notif_log');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id',             XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('userid',         XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('recipientemail', XMLDB_TYPE_CHAR,    '255', null, XMLDB_NOTNULL, null, '');
+            $table->add_field('recipientname',  XMLDB_TYPE_CHAR,    '255', null, null, null, null);
+            $table->add_field('subject',        XMLDB_TYPE_CHAR,    '500', null, XMLDB_NOTNULL, null, '');
+            $table->add_field('body',           XMLDB_TYPE_TEXT,    null,  null, null, null, null);
+            $table->add_field('channel',        XMLDB_TYPE_CHAR,    '30',  null, XMLDB_NOTNULL, null, 'email');
+            $table->add_field('messagetype',    XMLDB_TYPE_CHAR,    '50',  null, XMLDB_NOTNULL, null, 'general');
+            $table->add_field('status',         XMLDB_TYPE_CHAR,    '20',  null, XMLDB_NOTNULL, null, 'sent');
+            $table->add_field('timecreated',    XMLDB_TYPE_INTEGER, '10',  null, XMLDB_NOTNULL, null, '0');
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_index('userid',      XMLDB_INDEX_NOTUNIQUE, ['userid']);
+            $table->add_index('messagetype', XMLDB_INDEX_NOTUNIQUE, ['messagetype']);
+            $table->add_index('timecreated', XMLDB_INDEX_NOTUNIQUE, ['timecreated']);
+            $table->add_index('status',      XMLDB_INDEX_NOTUNIQUE, ['status']);
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026051900, 'local', 'leducon');
+    }
+
     return true;
 }

@@ -615,4 +615,12 @@ if ($hassiteconfig) {
     }
 
     $ADMIN->add('localplugins', $settings);
+
+    // External pages (not settings, but admin-only viewers).
+    $ADMIN->add('localplugins', new admin_externalpage(
+        'local_leducon_notification_log',
+        get_string('notiflog_title', 'local_leducon'),
+        new moodle_url('/local/leducon/admin/notification_log.php'),
+        'moodle/site:config'
+    ));
 }

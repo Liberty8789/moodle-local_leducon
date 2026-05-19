@@ -206,6 +206,7 @@ class report_scheduler extends \core\task\scheduled_task {
             $result = email_to_user($touser, $noreplyuser, $subject, $body,
                                      nl2br(htmlspecialchars($body, ENT_QUOTES)),
                                      $tmppath, $filename);
+            local_leducon_log_notification(0, $email, '', $subject, $body, 'email', 'general', $result ? 'sent' : 'failed');
             mtrace("  -> email to {$email}: " . ($result ? 'ok' : 'failed'));
         }
 

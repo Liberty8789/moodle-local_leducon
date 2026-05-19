@@ -70,7 +70,8 @@ class send_nudges extends \core\task\scheduled_task {
                 'siteurl'   => $pluginurl->out(false),
                 'sitename'  => format_string($site->fullname),
             ]);
-            email_to_user($u, $noreply, $subject, $body);
+            local_leducon_send_notification($u, $subject, $body, 'compliance_reminder',
+                '/local/leducon/gamify/index.php', get_string('pluginname', 'local_leducon'));
         }
     }
 }

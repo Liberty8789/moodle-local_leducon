@@ -415,5 +415,33 @@
       </INDEXES>
     </TABLE>
 
+    <!-- ============================================================ -->
+    <!-- NOTIFICATION LOG TABLE                                        -->
+    <!-- ============================================================ -->
+
+    <TABLE NAME="local_leducon_notif_log" COMMENT="Log of all notifications and emails sent by the plugin">
+      <FIELDS>
+        <FIELD NAME="id"           TYPE="int"  LENGTH="10"  NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid"       TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0" COMMENT="Recipient user ID (0 for external email)"/>
+        <FIELD NAME="recipientemail" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="recipientname"  TYPE="char" LENGTH="255" NOTNULL="false"/>
+        <FIELD NAME="subject"      TYPE="char" LENGTH="500" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="body"         TYPE="text" NOTNULL="false"/>
+        <FIELD NAME="channel"      TYPE="char" LENGTH="30"  NOTNULL="true" DEFAULT="email" COMMENT="email, popup, mobile"/>
+        <FIELD NAME="messagetype"  TYPE="char" LENGTH="50"  NOTNULL="true" DEFAULT="general" COMMENT="insight_alert, compliance_reminder, etc."/>
+        <FIELD NAME="status"       TYPE="char" LENGTH="20"  NOTNULL="true" DEFAULT="sent" COMMENT="sent, failed"/>
+        <FIELD NAME="timecreated"  TYPE="int"  LENGTH="10"  NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid"      UNIQUE="false" FIELDS="userid"/>
+        <INDEX NAME="messagetype" UNIQUE="false" FIELDS="messagetype"/>
+        <INDEX NAME="timecreated" UNIQUE="false" FIELDS="timecreated"/>
+        <INDEX NAME="status"      UNIQUE="false" FIELDS="status"/>
+      </INDEXES>
+    </TABLE>
+
   </TABLES>
 </XMLDB>

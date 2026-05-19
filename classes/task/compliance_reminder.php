@@ -79,9 +79,8 @@ class compliance_reminder extends \core\task\scheduled_task {
 
         mtrace('local_leducon compliance_reminder: ' . count($records) . ' reminder(s) to send.');
 
-        $noreplyuser = \core_user::get_noreply_user();
         $sent = 0;
-        $courseurl_base = $CFG->wwwroot . '/course/view.php?id=';
+        $courseurl_base = '/course/view.php?id=';
 
         // Avoid duplicate emails: group by user+course.
         $seen = [];
@@ -104,33 +103,24 @@ class compliance_reminder extends \core\task\scheduled_task {
             $a->coursename = $rec->coursename;
             $a->days = $daysleft;
             $a->deadline = userdate($rec->enddate, get_string('strftimedatetimeshort', 'langconfig'));
-            $a->courseurl = $courseurl_base . $rec->courseid;
+            $a->courseurl = $CFG->wwwroot . $courseurl_base . $rec->courseid;
 
             $body = get_string('compliance_reminder_body', 'local_leducon', $a);
-            $bodyhtml = nl2br(htmlspecialchars($body, ENT_QUOTES));
 
-            $touser = new \stdClass();
-            $touser->id = $rec->userid;
-            $touser->email = $rec->email;
-            $touser->firstname = '';
-            $touser->lastname = '';
-            $touser->username = $rec->email;
-            $touser->auth = 'manual';
-            $touser->confirmed = 1;
-            $touser->deleted = 0;
-            $touser->suspended = 0;
-            $touser->mnethostid = $CFG->mnet_localhost_id ?? 1;
-            $touser->emailstop = 0;
-            $touser->lang = $rec->lang ?? ($CFG->lang ?? 'en');
-            $touser->timezone = $CFG->timezone ?? '99';
-            $touser->mailformat = 1;
+            $touser = \core_user::get_user($rec->userid);
+            if (!$touser || $touser->deleted) {
+                continue;
+            }
 
-            $result = email_to_user($touser, $noreplyuser, $subject, $body, $bodyhtml);
+            $result = local_leducon_send_notification(
+                $touser, $subject, $body, 'compliance_reminder',
+                $courseurl_base . $rec->courseid, $rec->coursename
+            );
             if ($result) {
                 $sent++;
             }
         }
 
-        mtrace("local_leducon compliance_reminder: sent {$sent} reminder emails.");
+        mtrace("local_leducon compliance_reminder: sent {$sent} reminders.");
     }
 }

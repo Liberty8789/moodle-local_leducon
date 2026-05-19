@@ -301,6 +301,7 @@ class alert_checker extends \core\task\scheduled_task {
             $touser->mailformat = 1;
 
             $result = email_to_user($touser, $noreplyuser, $subject, $body, nl2br(htmlspecialchars($body, ENT_QUOTES)));
+            local_leducon_log_notification(0, $emailaddress, '', $subject, $body, 'email', 'atrisk_notification', $result ? 'sent' : 'failed');
             mtrace("  -> email to {$emailaddress}: " . ($result ? 'ok' : 'failed'));
         }
     }

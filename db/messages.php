@@ -20,21 +20,27 @@ $messageproviders = [
     'insight_alert' => [
         'capability' => 'local/leducon:viewanalytics',
         'defaults' => [
-            'popup' => MESSAGE_PERMITTED,
-            'email' => MESSAGE_PERMITTED,
+            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ],
     ],
     'atrisk_notification' => [
         'capability' => 'local/leducon:viewteacherview',
         'defaults' => [
-            'popup' => MESSAGE_PERMITTED,
-            'email' => MESSAGE_PERMITTED,
+            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ],
     ],
     'compliance_reminder' => [
         'defaults' => [
+            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
+        ],
+    ],
+    'general' => [
+        'defaults' => [
             'popup' => MESSAGE_PERMITTED,
-            'email' => MESSAGE_PERMITTED,
+            'email' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
         ],
     ],
 ];

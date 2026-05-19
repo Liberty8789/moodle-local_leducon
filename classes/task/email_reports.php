@@ -90,6 +90,7 @@ class email_reports extends \core\task\scheduled_task {
             $touser->mailformat = 1;
 
             $result = email_to_user($touser, $noreplyuser, $subject, $body, $body);
+            local_leducon_log_notification(0, $emailaddress, '', $subject, $body, 'email', 'general', $result ? 'sent' : 'failed');
             if ($result) {
                 mtrace("local_leducon email_reports: sent to {$emailaddress}");
             } else {

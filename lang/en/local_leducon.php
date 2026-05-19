@@ -2139,6 +2139,13 @@ $string['insight_notification_action']          = 'Review these reports in your 
 // =================================================================
 // WEB SERVICES
 // =================================================================
+// =================================================================
+// NOTIFICATION LOG
+// =================================================================
+$string['notiflog_title'] = 'Notification Log';
+$string['notiflog_desc']  = 'View all notifications and emails sent by the plugin, including delivery status.';
+$string['notiflog_empty'] = 'No notifications have been logged yet.';
+
 $string['privacy:metadata:users']               = 'Gamification user profile data';
 $string['privacy:metadata:users:userid']        = 'The user ID';
 $string['privacy:metadata:users:total_xp']      = 'Total experience points earned';

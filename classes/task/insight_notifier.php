@@ -66,22 +66,13 @@ class insight_notifier extends \core\task\scheduled_task {
         }
         $body .= get_string('insight_notification_action', 'local_leducon');
 
+        $subject = get_string('insight_notification_subject', 'local_leducon');
         foreach ($admins as $admin) {
-            $message = new \core\message\message();
-            $message->component         = 'local_leducon';
-            $message->name              = 'insight_alert';
-            $message->userfrom          = $supportuser;
-            $message->userto            = $admin;
-            $message->subject           = get_string('insight_notification_subject', 'local_leducon');
-            $message->fullmessage       = $body;
-            $message->fullmessageformat = FORMAT_PLAIN;
-            $message->fullmessagehtml   = nl2br(s($body));
-            $message->smallmessage      = get_string('insight_notification_subject', 'local_leducon');
-            $message->notification      = 1;
-            $message->contexturl        = new \moodle_url('/local/leducon/analytics/report.php');
-            $message->contexturlname    = get_string('nav_reports', 'local_leducon');
-
-            message_send($message);
+            local_leducon_send_notification(
+                $admin, $subject, $body, 'insight_alert',
+                '/local/leducon/analytics/report.php',
+                get_string('nav_reports', 'local_leducon')
+            );
         }
 
         mtrace('Leducon insight notifier: sent ' . count($dangerinsights) . ' critical alerts to ' . count($admins) . ' admins.');

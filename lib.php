@@ -351,6 +351,13 @@ function local_leducon_render_nav(string $section = '', string $activepage = '',
             'key'   => 'custom_reports',
         ];
     }
+    if (is_siteadmin()) {
+        $setupchildren[] = [
+            'url'   => new moodle_url('/local/leducon/admin/notification_log.php'),
+            'label' => get_string('notiflog_title', 'local_leducon'),
+            'key'   => 'notification_log',
+        ];
+    }
     if (!empty($setupchildren)) {
         $items[] = [
             'type'     => 'dropdown',
@@ -1102,6 +1109,110 @@ function local_leducon_ajax_section(string $section, int $userid): array {
 
         default:
             return ['error' => 'unknown_section'];
+    }
+}
+
+// =====================================================================
+// NOTIFICATION HELPERS
+// =====================================================================
+
+/**
+ * Send a notification via Moodle messaging API and log it.
+ *
+ * @param object $userto Recipient user object (must have id, email, firstname, lastname)
+ * @param string $subject Message subject
+ * @param string $body Plain text body
+ * @param string $messagetype Message provider name (e.g. 'insight_alert', 'compliance_reminder')
+ * @param string|null $contexturl Optional URL for the notification
+ * @param string|null $contexturlname Optional label for the URL
+ * @return bool Whether the message was sent successfully
+ */
+function local_leducon_send_notification($userto, string $subject, string $body,
+        string $messagetype = 'general', ?string $contexturl = null, ?string $contexturlname = null): bool {
+    global $DB;
+
+    $supportuser = \core_user::get_support_user();
+
+    $message = new \core\message\message();
+    $message->component         = 'local_leducon';
+    $message->name              = $messagetype;
+    $message->userfrom          = $supportuser;
+    $message->userto            = $userto;
+    $message->subject           = $subject;
+    $message->fullmessage       = $body;
+    $message->fullmessageformat = FORMAT_PLAIN;
+    $message->fullmessagehtml   = nl2br(s($body));
+    $message->smallmessage      = $subject;
+    $message->notification      = 1;
+    if ($contexturl) {
+        $message->contexturl     = new \moodle_url($contexturl);
+        $message->contexturlname = $contexturlname ?? $subject;
+    }
+
+    $success = false;
+    try {
+        message_send($message);
+        $success = true;
+    } catch (\Exception $e) {
+        debugging('local_leducon notification send failed: ' . $e->getMessage(), DEBUG_DEVELOPER);
+    }
+
+    local_leducon_log_notification(
+        $userto->id ?? 0,
+        $userto->email ?? '',
+        fullname($userto),
+        $subject,
+        $body,
+        'message',
+        $messagetype,
+        $success ? 'sent' : 'failed'
+    );
+
+    return $success;
+}
+
+/**
+ * Send an email and log it.
+ */
+function local_leducon_send_email($userto, string $subject, string $body,
+        string $messagetype = 'general'): bool {
+    $noreply = \core_user::get_noreply_user();
+    $result = email_to_user($userto, $noreply, $subject, $body, nl2br(s($body)));
+
+    local_leducon_log_notification(
+        $userto->id ?? 0,
+        $userto->email ?? '',
+        is_object($userto) && isset($userto->firstname) ? fullname($userto) : ($userto->email ?? ''),
+        $subject,
+        $body,
+        'email',
+        $messagetype,
+        $result ? 'sent' : 'failed'
+    );
+
+    return (bool) $result;
+}
+
+/**
+ * Log a notification/email to the database.
+ */
+function local_leducon_log_notification(int $userid, string $email, string $name,
+        string $subject, string $body, string $channel, string $messagetype, string $status): void {
+    global $DB;
+    try {
+        $DB->insert_record('local_leducon_notif_log', (object) [
+            'userid'         => $userid,
+            'recipientemail' => substr($email, 0, 255),
+            'recipientname'  => substr($name, 0, 255),
+            'subject'        => substr($subject, 0, 500),
+            'body'           => $body,
+            'channel'        => $channel,
+            'messagetype'    => $messagetype,
+            'status'         => $status,
+            'timecreated'    => time(),
+        ]);
+    } catch (\Exception $e) {
+        debugging('local_leducon notification log insert failed: ' . $e->getMessage(), DEBUG_DEVELOPER);
     }
 }
 

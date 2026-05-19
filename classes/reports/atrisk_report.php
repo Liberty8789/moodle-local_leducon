@@ -332,7 +332,9 @@ class atrisk_report extends base_report {
                 $htmlbody .= '<p style="color:#6b7280;font-size:13px;margin-top:24px;border-top:1px solid #e5e7eb;padding-top:12px">' . s(get_string('pluginname', 'local_leducon')) . '</p>';
                 $htmlbody .= '</div></div>';
 
-                email_to_user($teacher, \core_user::get_noreply_user(), $subject, $body, $htmlbody);
+                $atrisk_result = email_to_user($teacher, \core_user::get_noreply_user(), $subject, $body, $htmlbody);
+                local_leducon_log_notification($teacher->id, $teacher->email, fullname($teacher),
+                    $subject, $body, 'email', 'atrisk_notification', $atrisk_result ? 'sent' : 'failed');
             }
         }
 

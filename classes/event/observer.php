@@ -110,4 +110,77 @@ class observer {
         $badgeid = (int)$event->objectid;
         xp_engine::award($userid, 'badge_awarded', $badgeid, 'Badge: ' . $badgeid);
     }
+
+    /**
+     * When a user's grade is updated, check if the course grade hit 100%.
+     * If so, immediately write the completion record so the learner sees
+     * "Completed" without waiting for cron.
+     */
+    public static function user_graded(\core\event\user_graded $event): void {
+        global $DB;
+
+        $userid = (int)$event->relateduserid;
+        $gradeitemid = (int)$event->other['itemid'];
+
+        // Only care about course-level grade items.
+        $gi = $DB->get_record('grade_items', ['id' => $gradeitemid, 'itemtype' => 'course']);
+        if (!$gi || $gi->grademax <= 0) {
+            return;
+        }
+
+        // Get the actual grade.
+        $gg = $DB->get_record('grade_grades', [
+            'itemid' => $gi->id,
+            'userid' => $userid,
+        ]);
+        if (!$gg || $gg->finalgrade === null) {
+            return;
+        }
+
+        $pct = ($gg->finalgrade / $gi->grademax) * 100;
+        if ($pct < 100) {
+            return;
+        }
+
+        // Already completed? Skip.
+        $existing = $DB->get_record('course_completions', [
+            'userid' => $userid,
+            'course' => $gi->courseid,
+        ]);
+        if ($existing && !empty($existing->timecompleted)) {
+            return;
+        }
+
+        $now = time();
+
+        if ($existing) {
+            // Update the existing row.
+            $existing->timecompleted = $gg->timemodified ?: $now;
+            $DB->update_record('course_completions', $existing);
+            $completionid = $existing->id;
+        } else {
+            // Insert new completion record.
+            $completion = new \stdClass();
+            $completion->userid        = $userid;
+            $completion->course        = $gi->courseid;
+            $completion->timeenrolled  = 0;
+            $completion->timestarted   = 0;
+            $completion->timecompleted = $gg->timemodified ?: $now;
+            $completion->reaggregate   = 0;
+            $completionid = $DB->insert_record('course_completions', $completion);
+        }
+
+        // Fire course_completed event so badges, certificates, XP, etc. react.
+        try {
+            $completionevent = \core\event\course_completed::create([
+                'objectid'      => $completionid,
+                'relateduserid' => $userid,
+                'context'       => \context_course::instance($gi->courseid),
+                'courseid'      => $gi->courseid,
+            ]);
+            $completionevent->trigger();
+        } catch (\Throwable $e) {
+            // Non-critical — completion record is already written.
+        }
+    }
 }

@@ -66,4 +66,11 @@ $observers = [
         'internal'  => false,
         'priority'  => 200,
     ],
+
+    [
+        'eventname' => '\core\event\user_graded',
+        'callback'  => '\local_leducon\event\observer::user_graded',
+        'internal'  => false,
+        'priority'  => 200,
+    ],
 ];

@@ -186,5 +186,13 @@ function xmldb_local_leducon_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026051900, 'local', 'leducon');
     }
 
+    // 2026051901: Remove stale jabber message processor that blocks Moodle upgrades.
+    if ($oldversion < 2026051901) {
+        if ($DB->record_exists('message_processors', ['name' => 'jabber'])) {
+            $DB->delete_records('message_processors', ['name' => 'jabber']);
+        }
+        upgrade_plugin_savepoint(true, 2026051901, 'local', 'leducon');
+    }
+
     return true;
 }

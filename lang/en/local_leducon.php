@@ -1681,10 +1681,14 @@ $string['cr_col_created'] = 'Created';
 $string['cr_col_actions'] = 'Actions';
 
 // Custom report actions.
-$string['cr_action_view']   = 'View';
-$string['cr_action_edit']   = 'Edit';
-$string['cr_action_delete'] = 'Delete';
-$string['cr_back_to_list']  = 'Back to Reports';
+$string['cr_action_view']      = 'View';
+$string['cr_action_edit']      = 'Edit';
+$string['cr_action_delete']    = 'Delete';
+$string['cr_action_duplicate'] = 'Duplicate';
+$string['cr_back_to_list']     = 'Back to Reports';
+$string['cr_copy']             = 'copy';
+$string['cr_shared_yes']       = 'Shared';
+$string['cr_shared_no']        = 'Private';
 
 // Custom report builder form.
 $string['cr_field_name']        = 'Report Name';
@@ -1700,6 +1704,12 @@ $string['cr_cancel']            = 'Cancel';
 $string['cr_add_condition']     = 'Add Condition';
 $string['cr_cond_selectfield']  = 'Select field';
 $string['cr_cond_value']        = 'Value...';
+$string['cr_columns_desc']      = 'Select which columns to include in your report.';
+$string['cr_conditions_desc']   = 'Add filters to narrow down the data returned.';
+$string['cr_field_options']     = 'Sort & Options';
+$string['cr_field_direction']   = 'Direction';
+$string['cr_sort_asc']          = 'Ascending';
+$string['cr_sort_desc']         = 'Descending';
 
 // Custom report: scope filters.
 $string['cr_scope_heading']           = 'User Scope Filters';
@@ -1745,6 +1755,18 @@ $string['schedule_saved']           = 'Report schedule created.';
 $string['schedule_deleted']         = 'Report schedule deleted.';
 $string['schedule_active_heading']  = 'Active Schedules';
 $string['schedule_nodata']          = 'No scheduled deliveries yet.';
+$string['schedule_frequency']       = 'Frequency';
+$string['schedule_daily']           = 'Daily';
+$string['schedule_weekly']          = 'Weekly';
+$string['schedule_monthly']         = 'Monthly';
+$string['schedule_dow']             = 'Day of week';
+$string['schedule_dom']             = 'Day of month';
+$string['schedule_hour']            = 'Send at';
+$string['schedule_active']          = 'Active';
+$string['schedule_paused']          = 'Paused';
+$string['schedule_pause']           = 'Pause';
+$string['schedule_resume']          = 'Resume';
+$string['schedule_confirm_delete']  = 'Delete this schedule?';
 $string['schedule_col_report']      = 'Report';
 $string['schedule_col_frequency']   = 'Frequency';
 $string['schedule_col_recipients']  = 'Recipients';

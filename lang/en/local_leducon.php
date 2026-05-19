@@ -1665,6 +1665,8 @@ $string['tpl_inactive_users']           = 'Inactive Users Report';
 $string['tpl_inactive_users_desc']      = 'Users sorted by last access (oldest first) — find disengaged learners.';
 $string['tpl_department_roster']        = 'Department Roster';
 $string['tpl_department_roster_desc']   = 'Active users grouped by department and institution — a full staff directory.';
+$string['tpl_user_directory']           = 'Complete User Directory';
+$string['tpl_user_directory_desc']      = 'All users with full profile: department, institution, city, country, cohort, org unit, last access, and account status.';
 
 // Custom report tabs.
 $string['cr_tab_myreports'] = 'My Reports';

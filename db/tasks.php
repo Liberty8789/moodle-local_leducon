@@ -149,4 +149,16 @@ $tasks = [
         'month'      => '*',
         'disabled'   => 0,
     ],
+
+    // Completion sync: write missing course_completions for 100% grade users every 2 hours.
+    [
+        'classname'  => '\local_leducon\task\completion_sync',
+        'blocking'   => 0,
+        'minute'     => '30',
+        'hour'       => '*/2',
+        'day'        => '*',
+        'dayofweek'  => '*',
+        'month'      => '*',
+        'disabled'   => 0,
+    ],
 ];

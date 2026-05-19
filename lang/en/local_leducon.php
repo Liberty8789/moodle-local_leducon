@@ -2142,6 +2142,7 @@ $string['insight_notification_action']          = 'Review these reports in your 
 // =================================================================
 // NOTIFICATION LOG
 // =================================================================
+$string['task_completion_sync'] = 'Sync grade-based course completions';
 $string['notiflog_title'] = 'Notification Log';
 $string['notiflog_desc']  = 'View all notifications and emails sent by the plugin, including delivery status.';
 $string['notiflog_empty'] = 'No notifications have been logged yet.';

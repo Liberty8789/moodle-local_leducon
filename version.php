@@ -17,8 +17,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_leducon';
-$plugin->version   = 2026051901;
+$plugin->version   = 2026051902;
 $plugin->requires  = 2020061500;
 $plugin->supported = [39, 502];
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '2.2.1';
+$plugin->release   = '2.3.0';

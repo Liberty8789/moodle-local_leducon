@@ -63,6 +63,10 @@ class observer {
                 xp_engine::award($userid, 'quiz_pass_first', $ctx->id, 'First-pass quiz: ' . $attempt->quiz);
             }
         }
+
+        // Check if all quizzes in the course are now passed → course complete.
+        $courseid = (int)$event->courseid;
+        \local_leducon\completion_helper::check_and_complete($userid, $courseid);
     }
 
     /**
@@ -112,9 +116,9 @@ class observer {
     }
 
     /**
-     * When a user's grade is updated, check if the course grade hit 100%.
-     * If so, immediately write the completion record so the learner sees
-     * "Completed" without waiting for cron.
+     * When a user's grade is updated, check all completion signals.
+     * Triggers for course-level grade changes (100% grade signal) and
+     * also re-evaluates activity/SCORM/quiz signals.
      */
     public static function user_graded(\core\event\user_graded $event): void {
         global $DB;
@@ -122,65 +126,44 @@ class observer {
         $userid = (int)$event->relateduserid;
         $gradeitemid = (int)$event->other['itemid'];
 
-        // Only care about course-level grade items.
-        $gi = $DB->get_record('grade_items', ['id' => $gradeitemid, 'itemtype' => 'course']);
-        if (!$gi || $gi->grademax <= 0) {
+        $gi = $DB->get_record('grade_items', ['id' => $gradeitemid]);
+        if (!$gi) {
             return;
         }
 
-        // Get the actual grade.
-        $gg = $DB->get_record('grade_grades', [
-            'itemid' => $gi->id,
-            'userid' => $userid,
-        ]);
-        if (!$gg || $gg->finalgrade === null) {
-            return;
-        }
+        \local_leducon\completion_helper::check_and_complete($userid, (int)$gi->courseid);
+    }
 
-        $pct = ($gg->finalgrade / $gi->grademax) * 100;
-        if ($pct < 100) {
-            return;
-        }
+    /**
+     * When an activity module is marked complete, check if the whole course
+     * is now done (all activities completed signal).
+     */
+    public static function course_module_completion_updated(\core\event\course_module_completion_updated $event): void {
+        $userid   = (int)$event->relateduserid;
+        $courseid = (int)$event->courseid;
 
-        // Already completed? Skip.
-        $existing = $DB->get_record('course_completions', [
-            'userid' => $userid,
-            'course' => $gi->courseid,
-        ]);
-        if ($existing && !empty($existing->timecompleted)) {
-            return;
-        }
+        \local_leducon\completion_helper::check_and_complete($userid, $courseid);
+    }
 
-        $now = time();
+    /**
+     * When a SCORM track is updated (e.g. lesson_status = completed/passed),
+     * check if all SCORMs in the course are done.
+     */
+    public static function scorm_tracks_updated($event): void {
+        global $DB;
 
-        if ($existing) {
-            // Update the existing row.
-            $existing->timecompleted = $gg->timemodified ?: $now;
-            $DB->update_record('course_completions', $existing);
-            $completionid = $existing->id;
-        } else {
-            // Insert new completion record.
-            $completion = new \stdClass();
-            $completion->userid        = $userid;
-            $completion->course        = $gi->courseid;
-            $completion->timeenrolled  = 0;
-            $completion->timestarted   = 0;
-            $completion->timecompleted = $gg->timemodified ?: $now;
-            $completion->reaggregate   = 0;
-            $completionid = $DB->insert_record('course_completions', $completion);
-        }
+        $userid = (int)$event->userid;
 
-        // Fire course_completed event so badges, certificates, XP, etc. react.
+        // Get the course from the SCORM's context.
         try {
-            $completionevent = \core\event\course_completed::create([
-                'objectid'      => $completionid,
-                'relateduserid' => $userid,
-                'context'       => \context_course::instance($gi->courseid),
-                'courseid'      => $gi->courseid,
-            ]);
-            $completionevent->trigger();
+            $ctx = $event->get_context();
+            $cm = get_coursemodule_from_id('scorm', $ctx->instanceid, 0, false, IGNORE_MISSING);
+            if (!$cm) {
+                return;
+            }
+            \local_leducon\completion_helper::check_and_complete($userid, (int)$cm->course);
         } catch (\Throwable $e) {
-            // Non-critical — completion record is already written.
+            // SCORM module may not be installed.
         }
     }
 }

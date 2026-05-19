@@ -73,4 +73,25 @@ $observers = [
         'internal'  => false,
         'priority'  => 200,
     ],
+
+    [
+        'eventname' => '\core\event\course_module_completion_updated',
+        'callback'  => '\local_leducon\event\observer::course_module_completion_updated',
+        'internal'  => false,
+        'priority'  => 200,
+    ],
+
+    [
+        'eventname' => '\mod_scorm\event\scoreraw_submitted',
+        'callback'  => '\local_leducon\event\observer::scorm_tracks_updated',
+        'internal'  => false,
+        'priority'  => 200,
+    ],
+
+    [
+        'eventname' => '\mod_scorm\event\status_submitted',
+        'callback'  => '\local_leducon\event\observer::scorm_tracks_updated',
+        'internal'  => false,
+        'priority'  => 200,
+    ],
 ];

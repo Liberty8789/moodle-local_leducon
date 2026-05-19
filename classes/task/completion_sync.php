@@ -7,12 +7,11 @@
 // (at your option) any later version.
 
 /**
- * Scheduled task: sync grade-based completions into course_completions.
+ * Scheduled task: safety-net completion sync.
  *
- * Finds users who achieved 100% course grade but have no timecompleted
- * in course_completions, and writes the missing completion record.
- * This ensures Moodle's built-in completion system stays in sync even
- * when completion tracking is disabled for a course.
+ * Scans for users who should be marked course-complete based on any signal
+ * (grade, activities, SCORM, quizzes) but don't yet have a timecompleted.
+ * This catches anything the real-time event observer missed.
  *
  * @package   local_leducon
  * @copyright 2024 Liberty Education Resources
@@ -32,87 +31,51 @@ class completion_sync extends \core\task\scheduled_task {
     public function execute(): void {
         global $DB;
 
-        $now = time();
         $synced = 0;
-        $updated = 0;
 
-        // Find all users with 100% course grade but no timecompleted.
-        // Case 1: No course_completions record at all.
-        // Case 2: Record exists but timecompleted IS NULL.
-        $sql = "SELECT gg.userid,
-                       gi.courseid,
-                       gg.timemodified AS gradedate
-                  FROM {grade_grades} gg
-                  JOIN {grade_items} gi ON gi.id = gg.itemid
-                                       AND gi.itemtype = 'course'
-                                       AND gi.grademax > 0
-                 WHERE gg.finalgrade IS NOT NULL
-                   AND gg.finalgrade / gi.grademax * 100 >= 100
-                   AND NOT EXISTS (
-                       SELECT 1 FROM {course_completions} cc
-                        WHERE cc.userid = gg.userid
-                          AND cc.course = gi.courseid
-                          AND cc.timecompleted IS NOT NULL
-                   )";
+        // Get all courses where Moodle's own completion tracking is OFF.
+        // (Courses with enablecompletion=1 are handled by Moodle natively.)
+        $courses = $DB->get_records_select('course',
+            'id <> :siteid AND (enablecompletion = 0 OR enablecompletion IS NULL)',
+            ['siteid' => SITEID],
+            '',
+            'id'
+        );
 
-        $records = $DB->get_records_sql($sql);
+        if (empty($courses)) {
+            mtrace('local_leducon completion_sync: no courses with completion tracking disabled.');
+            return;
+        }
 
-        foreach ($records as $rec) {
-            // Verify the course and user still exist.
-            if (!$DB->record_exists('course', ['id' => $rec->courseid])) {
-                continue;
-            }
-            if (!$DB->record_exists('user', ['id' => $rec->userid, 'deleted' => 0])) {
-                continue;
-            }
+        foreach ($courses as $course) {
+            // Get all enrolled users in this course who are NOT already completed.
+            $users = $DB->get_records_sql(
+                "SELECT DISTINCT ue.userid
+                   FROM {user_enrolments} ue
+                   JOIN {enrol} e ON e.id = ue.enrolid AND e.courseid = :cid
+                   JOIN {user} u ON u.id = ue.userid AND u.deleted = 0 AND u.suspended = 0
+                  WHERE NOT EXISTS (
+                      SELECT 1 FROM {course_completions} cc
+                       WHERE cc.userid = ue.userid
+                         AND cc.course = :cid2
+                         AND cc.timecompleted IS NOT NULL
+                  )",
+                ['cid' => $course->id, 'cid2' => $course->id]
+            );
 
-            // Check if a course_completions row already exists (without timecompleted).
-            $existing = $DB->get_record('course_completions', [
-                'userid' => $rec->userid,
-                'course' => $rec->courseid,
-            ]);
-
-            if ($existing) {
-                // Update: set timecompleted to the grade timestamp.
-                $existing->timecompleted = $rec->gradedate ?: $now;
-                $existing->timemodified = $now;
-                $DB->update_record('course_completions', $existing);
-                $updated++;
-            } else {
-                // Insert new completion record.
-                $completion = new \stdClass();
-                $completion->userid        = $rec->userid;
-                $completion->course        = $rec->courseid;
-                $completion->timeenrolled  = 0;
-                $completion->timestarted   = 0;
-                $completion->timecompleted = $rec->gradedate ?: $now;
-                $completion->reaggregate   = 0;
-                $DB->insert_record('course_completions', $completion);
-                $synced++;
-            }
-
-            // Fire Moodle's completion event so other plugins react.
-            try {
-                $course = $DB->get_record('course', ['id' => $rec->courseid], 'id,category');
-                if ($course) {
-                    $event = \core\event\course_completed::create([
-                        'objectid'  => $existing->id ?? $DB->get_field('course_completions', 'id', [
-                            'userid' => $rec->userid,
-                            'course' => $rec->courseid,
-                        ]),
-                        'relateduserid' => $rec->userid,
-                        'context'       => \context_course::instance($rec->courseid),
-                        'courseid'      => $rec->courseid,
-                    ]);
-                    $event->trigger();
+            foreach ($users as $u) {
+                try {
+                    $result = \local_leducon\completion_helper::check_and_complete((int)$u->userid, (int)$course->id);
+                    if ($result) {
+                        $synced++;
+                    }
+                } catch (\Throwable $e) {
+                    mtrace("  completion_sync: error for user {$u->userid} course {$course->id}: " .
+                           $e->getMessage());
                 }
-            } catch (\Throwable $e) {
-                // Non-critical — log but don't fail the task.
-                mtrace("  completion_sync: event error for user {$rec->userid} course {$rec->courseid}: " .
-                       $e->getMessage());
             }
         }
 
-        mtrace("local_leducon completion_sync: {$synced} new records inserted, {$updated} existing records updated.");
+        mtrace("local_leducon completion_sync: {$synced} completion(s) written.");
     }
 }

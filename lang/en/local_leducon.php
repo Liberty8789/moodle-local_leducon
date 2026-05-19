@@ -1637,8 +1637,34 @@ $string['customreport_updated']         = 'Custom report updated.';
 $string['customreport_created']         = 'Custom report created.';
 $string['customreport_deleted']         = 'Custom report deleted.';
 $string['customreport_confirmdelete']   = 'Are you sure you want to delete this custom report?';
-$string['customreport_nodata']          = 'No custom reports yet. Create your first custom report.';
+$string['customreport_nodata']          = 'No custom reports yet. Create your first custom report or use a template below.';
 $string['nav_custom_reports']           = 'Custom Reports';
+$string['customreport_templates']       = 'Report Templates';
+$string['customreport_templates_desc']  = 'Pre-built reports ready to use. Click "Use Template" to add a copy to your reports.';
+$string['customreport_use_template']    = 'Use Template';
+$string['customreport_template_added']  = 'Template report created and added to your reports.';
+
+// Pre-built report templates.
+$string['tpl_monthly_completion']       = 'Monthly Completion Report';
+$string['tpl_monthly_completion_desc']  = 'All course completions with learner name, course, category, and completion date.';
+$string['tpl_grade_summary']            = 'Grade Summary Report';
+$string['tpl_grade_summary_desc']       = 'Course grades for all learners showing final grade, max grade, and percentage.';
+$string['tpl_low_performers']           = 'Low Performers Report';
+$string['tpl_low_performers_desc']      = 'Learners scoring below 50% across all courses — useful for intervention planning.';
+$string['tpl_new_enrolments']           = 'New Enrolments Report';
+$string['tpl_new_enrolments_desc']      = 'Recent enrolments with method and status — track onboarding progress.';
+$string['tpl_quiz_performance']         = 'Quiz Performance Report';
+$string['tpl_quiz_performance_desc']    = 'Completed quiz attempts with scores — monitor assessment outcomes.';
+$string['tpl_failed_quiz']              = 'Failed Quiz Attempts';
+$string['tpl_failed_quiz_desc']         = 'Quiz attempts scoring below 50% — identify learners needing support.';
+$string['tpl_overdue_assignments']      = 'Pending Assignments Report';
+$string['tpl_overdue_assignments_desc'] = 'Assignments with "new" status (not yet submitted) — follow up with learners.';
+$string['tpl_login_activity']           = 'Login Activity Report';
+$string['tpl_login_activity_desc']      = 'Recent login records with timestamps and IP addresses.';
+$string['tpl_inactive_users']           = 'Inactive Users Report';
+$string['tpl_inactive_users_desc']      = 'Users sorted by last access (oldest first) — find disengaged learners.';
+$string['tpl_department_roster']        = 'Department Roster';
+$string['tpl_department_roster_desc']   = 'Active users grouped by department and institution — a full staff directory.';
 
 // Custom report tabs.
 $string['cr_tab_myreports'] = 'My Reports';

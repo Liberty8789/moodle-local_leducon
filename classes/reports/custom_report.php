@@ -638,6 +638,158 @@ class custom_report extends base_report {
     }
 
     /**
+     * Returns pre-built report templates.
+     */
+    public static function get_templates(): array {
+        return [
+            'monthly_completion' => [
+                'name'        => get_string('tpl_monthly_completion', 'local_leducon'),
+                'description' => get_string('tpl_monthly_completion_desc', 'local_leducon'),
+                'datasource'  => 'completions',
+                'config'      => [
+                    'columns'  => ['fullname', 'email', 'coursename', 'category', 'timecompleted'],
+                    'conditions' => [],
+                    'scope'    => [],
+                    'orderby'  => 'timecompleted',
+                    'orderdir' => 'DESC',
+                ],
+            ],
+            'grade_summary' => [
+                'name'        => get_string('tpl_grade_summary', 'local_leducon'),
+                'description' => get_string('tpl_grade_summary_desc', 'local_leducon'),
+                'datasource'  => 'grades',
+                'config'      => [
+                    'columns'  => ['fullname', 'email', 'coursename', 'finalgrade', 'grademax', 'gradepct'],
+                    'conditions' => [
+                        ['field' => 'gradepct', 'operator' => 'gt', 'value' => '0'],
+                    ],
+                    'scope'    => [],
+                    'orderby'  => 'gradepct',
+                    'orderdir' => 'DESC',
+                ],
+            ],
+            'low_performers' => [
+                'name'        => get_string('tpl_low_performers', 'local_leducon'),
+                'description' => get_string('tpl_low_performers_desc', 'local_leducon'),
+                'datasource'  => 'grades',
+                'config'      => [
+                    'columns'  => ['fullname', 'email', 'coursename', 'gradepct', 'timemodified'],
+                    'conditions' => [
+                        ['field' => 'gradepct', 'operator' => 'lt', 'value' => '50'],
+                    ],
+                    'scope'    => [],
+                    'orderby'  => 'gradepct',
+                    'orderdir' => 'ASC',
+                ],
+            ],
+            'new_enrolments' => [
+                'name'        => get_string('tpl_new_enrolments', 'local_leducon'),
+                'description' => get_string('tpl_new_enrolments_desc', 'local_leducon'),
+                'datasource'  => 'enrollments',
+                'config'      => [
+                    'columns'  => ['fullname', 'email', 'coursename', 'category', 'enrolmethod', 'timeenrolled', 'status'],
+                    'conditions' => [],
+                    'scope'    => [],
+                    'orderby'  => 'timeenrolled',
+                    'orderdir' => 'DESC',
+                ],
+            ],
+            'quiz_performance' => [
+                'name'        => get_string('tpl_quiz_performance', 'local_leducon'),
+                'description' => get_string('tpl_quiz_performance_desc', 'local_leducon'),
+                'datasource'  => 'quiz_attempts',
+                'config'      => [
+                    'columns'  => ['fullname', 'email', 'quizname', 'coursename', 'attempt', 'sumgrades', 'state', 'timefinish'],
+                    'conditions' => [
+                        ['field' => 'state', 'operator' => 'eq', 'value' => 'finished'],
+                    ],
+                    'scope'    => [],
+                    'orderby'  => 'timefinish',
+                    'orderdir' => 'DESC',
+                ],
+            ],
+            'failed_quiz_attempts' => [
+                'name'        => get_string('tpl_failed_quiz', 'local_leducon'),
+                'description' => get_string('tpl_failed_quiz_desc', 'local_leducon'),
+                'datasource'  => 'quiz_attempts',
+                'config'      => [
+                    'columns'  => ['fullname', 'email', 'quizname', 'coursename', 'attempt', 'sumgrades', 'timefinish'],
+                    'conditions' => [
+                        ['field' => 'sumgrades', 'operator' => 'lt', 'value' => '50'],
+                    ],
+                    'scope'    => [],
+                    'orderby'  => 'sumgrades',
+                    'orderdir' => 'ASC',
+                ],
+            ],
+            'overdue_assignments' => [
+                'name'        => get_string('tpl_overdue_assignments', 'local_leducon'),
+                'description' => get_string('tpl_overdue_assignments_desc', 'local_leducon'),
+                'datasource'  => 'assignments',
+                'config'      => [
+                    'columns'  => ['fullname', 'email', 'assignname', 'coursename', 'status', 'timesubmitted', 'grade'],
+                    'conditions' => [
+                        ['field' => 'status', 'operator' => 'eq', 'value' => 'new'],
+                    ],
+                    'scope'    => [],
+                    'orderby'  => 'timesubmitted',
+                    'orderdir' => 'ASC',
+                ],
+            ],
+            'login_activity' => [
+                'name'        => get_string('tpl_login_activity', 'local_leducon'),
+                'description' => get_string('tpl_login_activity_desc', 'local_leducon'),
+                'datasource'  => 'logins',
+                'config'      => [
+                    'columns'  => ['fullname', 'email', 'timecreated', 'ip'],
+                    'conditions' => [],
+                    'scope'    => [],
+                    'orderby'  => 'timecreated',
+                    'orderdir' => 'DESC',
+                ],
+            ],
+            'inactive_users' => [
+                'name'        => get_string('tpl_inactive_users', 'local_leducon'),
+                'description' => get_string('tpl_inactive_users_desc', 'local_leducon'),
+                'datasource'  => 'users',
+                'config'      => [
+                    'columns'  => ['fullname', 'email', 'department', 'institution', 'lastaccess', 'suspended'],
+                    'conditions' => [],
+                    'scope'    => [],
+                    'orderby'  => 'lastaccess',
+                    'orderdir' => 'ASC',
+                ],
+            ],
+            'department_roster' => [
+                'name'        => get_string('tpl_department_roster', 'local_leducon'),
+                'description' => get_string('tpl_department_roster_desc', 'local_leducon'),
+                'datasource'  => 'users',
+                'config'      => [
+                    'columns'  => ['fullname', 'email', 'username', 'department', 'institution', 'lastaccess', 'timecreated'],
+                    'conditions' => [
+                        ['field' => 'suspended', 'operator' => 'eq', 'value' => 'Active'],
+                    ],
+                    'scope'    => [],
+                    'orderby'  => 'fullname',
+                    'orderdir' => 'ASC',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Create a report from a template for a given user.
+     */
+    public static function create_from_template(string $templatekey, int $userid): int {
+        $templates = self::get_templates();
+        if (!isset($templates[$templatekey])) {
+            throw new \coding_exception('Unknown template: ' . $templatekey);
+        }
+        $tpl = $templates[$templatekey];
+        return self::create($tpl['name'], $tpl['description'], $tpl['datasource'], $tpl['config'], $userid, false);
+    }
+
+    /**
      * Export report data as CSV string.
      */
     public function export_csv(): string {

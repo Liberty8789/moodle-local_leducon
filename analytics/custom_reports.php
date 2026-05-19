@@ -129,6 +129,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             \core\output\notification::NOTIFY_SUCCESS);
     }
 
+    if ($action === 'usetemplate') {
+        $tplkey = required_param('template', PARAM_ALPHANUMEXT);
+        custom_report::create_from_template($tplkey, $USER->id);
+        redirect($pageurl, get_string('customreport_template_added', 'local_leducon'), null,
+            \core\output\notification::NOTIFY_SUCCESS);
+    }
+
     if ($action === 'saveschedule') {
         $reportid   = optional_param('sched_reportid', 0, PARAM_INT);
         $reporttype = optional_param('sched_reporttype', '', PARAM_ALPHANUMEXT);
@@ -285,6 +292,35 @@ if ($tab === 'list') {
             ['class' => 'ld-btn ld-btn-primary', 'style' => 'margin-top:1rem']
         )
     );
+
+    // ── Report Templates ──────────────────────────────────
+    $templates = custom_report::get_templates();
+    echo html_writer::tag('h4', s(get_string('customreport_templates', 'local_leducon')),
+        ['style' => 'margin-top:2rem;margin-bottom:.25rem']);
+    echo html_writer::tag('p', s(get_string('customreport_templates_desc', 'local_leducon')),
+        ['class' => 'text-muted', 'style' => 'margin-bottom:1rem']);
+
+    echo html_writer::start_div('ld-template-grid', ['style' => 'display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem']);
+    foreach ($templates as $tkey => $tpl) {
+        $dslabel = $datasources[$tpl['datasource']]['label'] ?? $tpl['datasource'];
+        echo html_writer::start_div('ld-card', ['style' => 'padding:1rem']);
+        echo html_writer::tag('h5', s($tpl['name']), ['style' => 'margin:0 0 .25rem']);
+        echo html_writer::tag('span', s($dslabel), ['class' => 'ld-badge ld-badge-info', 'style' => 'font-size:.75rem']);
+        echo html_writer::tag('p', s($tpl['description']), ['class' => 'text-muted small', 'style' => 'margin:.5rem 0']);
+        echo html_writer::start_tag('form', [
+            'method' => 'post',
+            'action' => $pageurl->out(false),
+            'style'  => 'margin:0',
+        ]);
+        echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
+        echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'action', 'value' => 'usetemplate']);
+        echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'template', 'value' => $tkey]);
+        echo html_writer::tag('button', s(get_string('customreport_use_template', 'local_leducon')),
+            ['type' => 'submit', 'class' => 'ld-btn ld-btn-sm ld-btn-primary']);
+        echo html_writer::end_tag('form');
+        echo html_writer::end_div();
+    }
+    echo html_writer::end_div();
 }
 
 // ──────────────────────────────────────────────────────────────

@@ -42,11 +42,19 @@ if ($filterstatus !== '') {
 }
 $wheresql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-$total = $DB->count_records_sql("SELECT COUNT(*) FROM {local_leducon_notif_log} $wheresql", $params);
-$logs = $DB->get_records_sql(
-    "SELECT * FROM {local_leducon_notif_log} $wheresql ORDER BY timecreated DESC",
-    $params, $page * $perpage, $perpage
-);
+// Safety check: table may not exist if upgrade step was skipped.
+$dbman = $DB->get_manager();
+$tableexists = $dbman->table_exists('local_leducon_notif_log');
+
+$total = 0;
+$logs = [];
+if ($tableexists) {
+    $total = $DB->count_records_sql("SELECT COUNT(*) FROM {local_leducon_notif_log} $wheresql", $params);
+    $logs = $DB->get_records_sql(
+        "SELECT * FROM {local_leducon_notif_log} $wheresql ORDER BY timecreated DESC",
+        $params, $page * $perpage, $perpage
+    );
+}
 
 echo $OUTPUT->header();
 echo html_writer::tag('h2', get_string('notiflog_title', 'local_leducon'));
@@ -83,6 +91,11 @@ echo '<span class="text-muted" style="margin-left:auto">' . $total . ' total</sp
 echo '</div>';
 
 // Table.
+if (!$tableexists) {
+    echo '<div class="alert alert-warning">The notification log table has not been created yet. Please go to <strong>Site Administration → Notifications</strong> to run the database upgrade, then return here.</div>';
+    echo $OUTPUT->footer();
+    die();
+}
 if (empty($logs)) {
     echo html_writer::tag('p', get_string('notiflog_empty', 'local_leducon'), ['class' => 'alert alert-info']);
 } else {

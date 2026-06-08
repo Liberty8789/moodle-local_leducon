@@ -177,6 +177,22 @@ function local_leducon_render_nav(string $section = '', string $activepage = '',
             'key'   => 'org_report',
         ];
     }
+    // ── Advanced Analytics (from leduconx extension, if installed) ──
+    if (function_exists('local_leduconx_get_nav_items')) {
+        $xitems = local_leduconx_get_nav_items();
+        if (!empty($xitems)) {
+            $analyticschildren[] = [
+                'url'   => '#',
+                'label' => '─── Advanced ───',
+                'key'   => 'x_separator',
+                'disabled' => true,
+            ];
+            foreach ($xitems as $xi) {
+                $analyticschildren[] = $xi;
+            }
+        }
+    }
+
     if (!empty($analyticschildren)) {
         $items[] = [
             'type'     => 'dropdown',
